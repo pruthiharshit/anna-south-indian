@@ -11,12 +11,11 @@
     body { background: var(--bg-deep); color: var(--ivory); font-family: var(--font-sans); min-height: 100vh; line-height: 1.5; }
     button, input, select, textarea { font-family: inherit; font-size: 0.92rem; outline: none; }
     
-    /* Anti-Flicker Loader */
     #initialLoader { position: fixed; inset: 0; background: var(--bg-deep); z-index: 9999; display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 1.5rem; color: var(--gold); }
     
     .toast-wrap { position: fixed; top: 18px; right: 18px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; max-width: 360px; width: 90%; }
-    .toast { padding: 12px 16px; border-radius: 10px; background: var(--bg-card); border: 1px solid var(--gold); color: var(--ivory); font-size: 0.86rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    .toast.error { border-color: var(--red); color: #ffb4b4; }
+    .toast { padding: 12px 16px; border-radius: 10px; background: var(--green); border: 1px solid #1d6e3f; color: #fff; font-size: 0.86rem; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .toast.error { background: var(--bg-card); border-color: var(--red); color: #ffb4b4; }
 
     .auth-screen { min-height: 100vh; display: none; align-items: center; justify-content: center; padding: 20px; }
     .auth-card { width: 100%; max-width: 420px; background: var(--bg-panel); border: 1px solid var(--gold-border); border-radius: 18px; padding: 32px 24px; }
@@ -60,12 +59,11 @@
     .progress-bar-wrap { height: 6px; background: var(--bg-card); border-radius: 99px; overflow: hidden; margin-top: 10px; display: none; }
     .progress-bar-fill { height: 100%; width: 0%; background: var(--gold); transition: width 0.2s ease; }
 
-    /* MOBILE OPTIMIZATION */
     @media (max-width: 800px) {
       .dashboard-shell.active { flex-direction: column; }
       .sidebar { width: 100%; position: fixed; bottom: 0; left: 0; right: 0; flex-direction: row; overflow-x: auto; padding: 10px; z-index: 1000; border-right: none; border-top: 1px solid var(--border); scrollbar-width: none; }
       .sidebar::-webkit-scrollbar { display: none; }
-      .sidebar-brand { display: none; } /* Hide brand text on mobile bottom nav */
+      .sidebar-brand { display: none; }
       .nav-btn { white-space: nowrap; justify-content: center; padding: 10px 14px; font-size: 0.82rem; }
       .main-area { padding: 16px 16px 80px; }
       .admin-row { flex-direction: column; align-items: flex-start; }
@@ -79,12 +77,12 @@
   <div id="initialLoader">Authenticating...</div>
   <div class="toast-wrap" id="toastWrap"></div>
 
-  <!-- Login -->
+  <!-- Login Form (Bulletproofed) -->
   <section class="auth-screen" id="loginScreen">
     <div class="auth-card">
       <h1>Anna Owner Portal</h1>
       <p style="margin-bottom:20px; color:var(--ivory-dim);">Sign in with your authorized Firebase account.</p>
-      <form id="loginForm">
+      <form id="loginForm" onsubmit="event.preventDefault();">
         <div class="form-group"><input type="email" id="loginEmail" class="form-input" placeholder="Admin Email" required /></div>
         <div class="form-group"><input type="password" id="loginPassword" class="form-input" placeholder="Password" required /></div>
         <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;">Sign In</button>
@@ -130,11 +128,11 @@
         <div id="adminCategoriesList"></div>
       </section>
 
-      <!-- Settings & Team -->
+      <!-- Settings & Team (Bulletproofed Form) -->
       <section class="tab-pane" id="settingsTab">
         <div class="page-header"><h1 class="page-title">Settings, Logo & Team</h1></div>
         
-        <form id="restaurantSettingsForm" class="stat-card" style="margin-bottom:20px;">
+        <form id="restaurantSettingsForm" class="stat-card" style="margin-bottom:20px;" onsubmit="event.preventDefault();">
           <h3 style="font-family:var(--font-serif); font-size:1.4rem; margin-bottom:14px; color:var(--gold);">Brand & Sales Settings</h3>
           
           <div class="form-group" style="border:1px solid var(--border); padding:14px; border-radius:12px; background:var(--bg-input);">
@@ -144,12 +142,13 @@
 
           <div class="form-group" style="border:1px solid var(--border); padding:14px; border-radius:12px; background:var(--bg-input);">
             <label class="form-label">Restaurant Logo</label>
-            <div style="display:flex; gap:12px; align-items:center;">
-              <img id="logoPreviewImg" src="" style="width:50px; height:50px; border-radius:50%; background:var(--bg-card); display:none; object-fit:cover; border:1px solid var(--gold);" />
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+              <img id="logoPreviewImg" src="" style="width:60px; height:60px; border-radius:50%; background:var(--bg-card); display:none; object-fit:cover; border:2px solid var(--gold);" />
               <div>
                 <input type="file" id="logoUploadInput" accept="image/png,image/jpeg,image/webp" style="display:none;" />
-                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('logoUploadInput').click()">Upload Logo</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="logoUploadBtn" onclick="document.getElementById('logoUploadInput').click()">Upload New Logo</button>
                 <button type="button" class="btn btn-danger btn-sm" id="removeLogoBtn" style="display:none;">Remove</button>
+                <div id="logoUploadStatus" style="font-size:0.8rem; color:var(--gold); margin-top:6px; display:none;">Uploading...</div>
               </div>
             </div>
             <input type="hidden" id="setLogoUrl" />
@@ -159,12 +158,12 @@
           <div class="form-group"><label class="form-label">Phone</label><input type="text" id="setPhone" class="form-input" required /></div>
           <div class="form-group"><label class="form-label">Full Address</label><textarea id="setAddress" class="form-textarea" rows="2" required></textarea></div>
           <div class="form-group"><label class="form-label">Opening Hours</label><input type="text" id="setHours" class="form-input" /></div>
-          <button type="submit" class="btn btn-primary" id="saveSettingsBtn" style="margin-top:10px;">Save Store Settings</button>
+          <button type="submit" class="btn btn-primary" id="saveSettingsBtn" style="margin-top:10px; width:100%; max-width:300px;">Save Store Settings</button>
         </form>
 
-        <form id="addAdminForm" class="stat-card">
+        <form id="addAdminForm" class="stat-card" onsubmit="event.preventDefault();">
           <h3 style="font-family:var(--font-serif); font-size:1.4rem; margin-bottom:6px; color:var(--gold);">Authorized Team Access</h3>
-          <p style="font-size:0.75rem; color:var(--ivory-dim); margin-bottom:14px;">Add a new manager. This directly creates their Firebase login and authorizes their dashboard access.</p>
+          <p style="font-size:0.75rem; color:var(--ivory-dim); margin-bottom:14px;">Add a new manager. This creates their Firebase login and authorizes their dashboard access.</p>
           
           <div class="form-group"><input type="email" id="newAdminEmail" class="form-input" placeholder="manager@example.com" required /></div>
           <div class="form-group"><input type="password" id="newAdminPassword" class="form-input" placeholder="Create their password (min 6 chars)" minlength="6" required /></div>
@@ -176,14 +175,14 @@
     </main>
   </div>
 
-  <!-- Dish Modal -->
+  <!-- Dish Modal (Bulletproofed Form) -->
   <div class="editor-backdrop" id="itemEditorModal">
     <div class="editor-modal">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
         <h2 id="itemModalHeading" style="font-family:var(--font-serif); font-size:1.6rem;">Edit Dish</h2>
         <button type="button" class="btn btn-secondary btn-sm" id="closeItemModalBtn">✕</button>
       </div>
-      <form id="itemForm">
+      <form id="itemForm" onsubmit="event.preventDefault();">
         <input type="hidden" id="itemId" />
         <input type="hidden" id="itemImageKey" />
         <div class="form-group"><label class="form-label">Dish Name *</label><input type="text" id="itemName" class="form-input" required /></div>
@@ -217,11 +216,11 @@
     </div>
   </div>
 
-  <!-- Category Modal -->
+  <!-- Category Modal (Bulletproofed Form) -->
   <div class="editor-backdrop" id="categoryEditorModal">
     <div class="editor-modal" style="max-width:400px;">
       <h2 style="font-family:var(--font-serif); font-size:1.6rem; margin-bottom:16px;">Category</h2>
-      <form id="categoryForm">
+      <form id="categoryForm" onsubmit="event.preventDefault();">
         <input type="hidden" id="catId" />
         <div class="form-group"><label class="form-label">Name</label><input type="text" id="catName" class="form-input" required /></div>
         <div class="form-group"><label class="switch-label"><input type="checkbox" id="catActive" checked /><span>Enabled</span></label></div>
@@ -237,6 +236,7 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
+    // Firebase Credentials
     const firebaseConfig = {
       apiKey: "AIzaSyDxxCYCn-HL6ifsoGiQZ_quskyjJgN-JXs",
       authDomain: "anna-menu.firebaseapp.com",
@@ -251,7 +251,16 @@
     let items = [];
     let admins = [];
 
-    function showToast(msg, isError = false) { const w = document.getElementById('toastWrap'); const e = document.createElement('div'); e.className = 'toast' + (isError ? ' error' : ''); e.textContent = msg; w.appendChild(e); setTimeout(() => e.remove(), 4000); }
+    // Green Success Toasts
+    function showToast(msg, isError = false) { 
+      const w = document.getElementById('toastWrap'); 
+      const e = document.createElement('div'); 
+      e.className = 'toast' + (isError ? ' error' : ''); 
+      e.textContent = msg; 
+      w.appendChild(e); 
+      setTimeout(() => e.remove(), 4000); 
+    }
+    
     function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str == null ? '' : String(str); return d.innerHTML; }
 
     async function apiFetch(url, options = {}) {
@@ -279,14 +288,17 @@
       }
     });
 
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Login Form Listener
+    document.getElementById('loginForm').addEventListener('submit', async () => {
       const btn = document.getElementById('loginBtn');
       btn.disabled = true; btn.textContent = 'Signing in...';
       try {
         await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value.trim(), document.getElementById('loginPassword').value);
-      } catch { showToast('Invalid email or password.', true); }
-      finally { btn.disabled = false; btn.textContent = 'Sign In'; }
+      } catch { 
+        showToast('Invalid email or password.', true); 
+      } finally { 
+        btn.disabled = false; btn.textContent = 'Sign In'; 
+      }
     });
 
     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
@@ -320,6 +332,7 @@
       } catch (err) { showToast(err.message, true); }
     }
 
+    // Tab Navigation
     document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.addEventListener('click', () => {
       document.querySelectorAll('.nav-btn[data-tab]').forEach(x => x.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
@@ -346,14 +359,13 @@
       catch (e) { showToast(e.message, true); }
     };
 
-    document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Add Admin Form Listener
+    document.getElementById('addAdminForm').addEventListener('submit', async () => {
       const btn = document.getElementById('authAdminBtn');
       btn.disabled = true; btn.textContent = 'Creating...';
       const newEmail = document.getElementById('newAdminEmail').value.trim();
       const newPass = document.getElementById('newAdminPassword').value;
       try {
-        // 1. Create User via Firebase REST API
         const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: newEmail, password: newPass, returnSecureToken: false })
@@ -361,12 +373,11 @@
         const fbData = await res.json();
         if (!res.ok && fbData.error?.message !== 'EMAIL_EXISTS') throw new Error(fbData.error?.message || 'Firebase error');
         
-        // 2. Add to Dashboard Auth List
         await apiFetch('/api/admins', { method: 'POST', body: JSON.stringify({ email: newEmail }) });
         
         document.getElementById('newAdminEmail').value = '';
         document.getElementById('newAdminPassword').value = '';
-        showToast('Admin created and authorized!');
+        showToast('✓ Admin created and authorized successfully!');
         await loadAllDashboardData();
       } catch (e) { showToast(e.message, true); }
       finally { btn.disabled = false; btn.textContent = 'Create & Authorize Account'; }
@@ -398,8 +409,8 @@
       document.getElementById('categoryEditorModal').classList.add('open');
     });
 
-    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Category Form Listener
+    document.getElementById('categoryForm').addEventListener('submit', async () => {
       const btn = document.getElementById('saveCatBtn'); btn.disabled = true;
       try {
         const id = document.getElementById('catId').value;
@@ -408,6 +419,7 @@
           body: JSON.stringify({ id: id ? Number(id) : undefined, name: document.getElementById('catName').value, is_active: document.getElementById('catActive').checked ? 1 : 0 })
         });
         document.getElementById('categoryEditorModal').classList.remove('open');
+        showToast('✓ Category saved successfully!');
         await loadAllDashboardData();
       } catch (err) { showToast(err.message, true); }
       finally { btn.disabled = false; }
@@ -461,8 +473,8 @@
 
     document.getElementById('closeItemModalBtn').addEventListener('click', () => document.getElementById('itemEditorModal').classList.remove('open'));
 
-    document.getElementById('itemForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Dish Form Listener
+    document.getElementById('itemForm').addEventListener('submit', async () => {
       const btn = document.getElementById('saveDishBtn'); btn.disabled = true;
       try {
         const id = document.getElementById('itemId').value;
@@ -484,12 +496,13 @@
           })
         });
         document.getElementById('itemEditorModal').classList.remove('open');
+        showToast('✓ Dish saved successfully!');
         await loadAllDashboardData();
       } catch (err) { showToast(err.message, true); }
       finally { btn.disabled = false; }
     });
 
-    // Image Upload
+    // Image Upload Logic
     async function uploadImage(file, isLogo = false) {
       return new Promise((resolve, reject) => {
         const img = new Image();
@@ -505,11 +518,12 @@
             try { resolve(await apiFetch('/api/upload', { method: 'POST', body: fd })); } catch(e){ reject(e); }
           }, 'image/webp', 0.85);
         };
-        img.onerror = () => reject(new Error('Invalid image'));
+        img.onerror = () => reject(new Error('Invalid image. Please try another photo.'));
         img.src = URL.createObjectURL(file);
       });
     }
 
+    // Dish Photo Picker
     document.getElementById('imageDropzone').addEventListener('click', () => document.getElementById('imageFileInput').click());
     document.getElementById('imageFileInput').addEventListener('change', async (e) => {
       const file = e.target.files?.[0]; if (!file) return;
@@ -523,21 +537,46 @@
     });
     document.getElementById('removeImageBtn').addEventListener('click', () => { document.getElementById('itemImageKey').value = ''; document.getElementById('removeImageBtn').style.display = 'none'; });
 
+    // Live Visual Feedback for Logo Upload
     document.getElementById('logoUploadInput').addEventListener('change', async (e) => {
       const file = e.target.files?.[0]; if (!file) return;
+      const statusText = document.getElementById('logoUploadStatus');
+      const uploadBtn = document.getElementById('logoUploadBtn');
+      
+      statusText.style.display = 'block';
+      statusText.textContent = 'Uploading... Please wait.';
+      uploadBtn.disabled = true;
+
       try {
         const res = await uploadImage(file, true);
         document.getElementById('setLogoUrl').value = res.image_url;
         document.getElementById('logoPreviewImg').src = res.image_url;
         document.getElementById('logoPreviewImg').style.display = 'block';
         document.getElementById('removeLogoBtn').style.display = 'inline-block';
-      } catch(e) { showToast(e.message, true); }
+        statusText.textContent = '✓ Upload complete! Click Save below.';
+        statusText.style.color = 'var(--green)';
+        showToast('✓ Logo uploaded! Click "Save Store Settings" to apply.', false);
+      } catch(e) { 
+        statusText.textContent = 'Upload failed.';
+        statusText.style.color = 'var(--red)';
+        showToast(e.message, true); 
+      } finally {
+        uploadBtn.disabled = false;
+      }
     });
-    document.getElementById('removeLogoBtn').addEventListener('click', () => { document.getElementById('setLogoUrl').value = ''; document.getElementById('logoPreviewImg').style.display = 'none'; document.getElementById('removeLogoBtn').style.display = 'none'; });
 
-    document.getElementById('restaurantSettingsForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('saveSettingsBtn'); btn.disabled = true; btn.textContent = 'Saving...';
+    document.getElementById('removeLogoBtn').addEventListener('click', () => { 
+      document.getElementById('setLogoUrl').value = ''; 
+      document.getElementById('logoPreviewImg').style.display = 'none'; 
+      document.getElementById('removeLogoBtn').style.display = 'none'; 
+      document.getElementById('logoUploadStatus').style.display = 'none';
+    });
+
+    // Save Settings Form Listener
+    document.getElementById('restaurantSettingsForm').addEventListener('submit', async () => {
+      const btn = document.getElementById('saveSettingsBtn'); 
+      btn.disabled = true; 
+      btn.textContent = 'Saving Settings...';
       try {
         await apiFetch('/api/settings', {
           method: 'PUT',
@@ -550,9 +589,13 @@
             logo_url: document.getElementById('setLogoUrl').value
           })
         });
-        showToast('Settings saved!');
-      } catch(e) { showToast(e.message, true); }
-      finally { btn.disabled = false; btn.textContent = 'Save Store Settings'; }
+        showToast('✓ Store Settings saved successfully!');
+      } catch(e) { 
+        showToast(e.message, true); 
+      } finally { 
+        btn.disabled = false; 
+        btn.textContent = 'Save Store Settings'; 
+      }
     });
 
   </script>
