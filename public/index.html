@@ -5,273 +5,138 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#101614" />
   <title>Anna South Indian Dosa — Digital Menu</title>
-  <meta name="description" content="Explore the official digital menu of Anna South Indian Dosa." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg-deep: #0f1513;
-      --bg-surface: #16201d;
-      --bg-card: #1b2824;
-      --bg-elevated: #22332e;
-      --teal-brand: #26463c;
-      --ivory: #f6f2e9;
-      --ivory-muted: #bfb9ac;
-      --ivory-dim: #88847a;
-      --gold: #cfa858;
-      --gold-soft: rgba(207, 168, 88, 0.16);
-      --gold-border: rgba(207, 168, 88, 0.32);
-      --border-subtle: rgba(246, 242, 233, 0.09);
-      --veg-green: #2e9e5b;
-      --nonveg-red: #d64545;
-      --radius-lg: 16px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
-      --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.25);
-      --font-serif: 'Cormorant Garamond', Georgia, serif;
-      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --bg-deep: #0f1513; --bg-surface: #16201d; --bg-card: #1b2824; --bg-elevated: #22332e;
+      --gold: #cfa858; --gold-soft: rgba(207, 168, 88, 0.16); --gold-border: rgba(207, 168, 88, 0.32);
+      --ivory: #f6f2e9; --ivory-muted: #bfb9ac; --ivory-dim: #88847a;
+      --border-subtle: rgba(246, 242, 233, 0.09); --veg-green: #2e9e5b; --nonveg-red: #d64545;
+      --font-serif: 'Cormorant Garamond', Georgia, serif; --font-sans: 'Plus Jakarta Sans', sans-serif;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html { scroll-behavior: smooth; background-color: var(--bg-deep); color: var(--ivory); font-family: var(--font-sans); }
-    body { min-height: 100vh; overflow-x: hidden; }
+    body { background-color: var(--bg-deep); color: var(--ivory); font-family: var(--font-sans); overflow-x: hidden; }
     a { color: inherit; text-decoration: none; }
     button, input { font-family: inherit; outline: none; border: none; }
 
-    /* Mobile-First App Header */
-    .app-header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(15, 21, 19, 0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
+    /* Announcement Banner */
+    #announcementBanner { display: none; background: var(--gold); color: #101614; text-align: center; padding: 8px 16px; font-weight: 700; font-size: 0.85rem; z-index: 60; position: relative; }
 
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0; /* Prevents flex blowout */
-    }
-
-    .logo-frame {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: var(--bg-elevated);
-      border: 1px solid var(--gold-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-
-    .logo-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none; /* Hidden until loaded */
-    }
-
-    .logo-fallback {
-      font-family: var(--font-serif);
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--gold);
-    }
-
-    .brand-text {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .brand-name {
-      font-family: var(--font-serif);
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: var(--ivory);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.1;
-    }
-
-    .brand-meta {
-      font-size: 0.72rem;
-      color: var(--gold);
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .circle-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--bg-surface);
-      border: 1px solid var(--gold-border);
-      color: var(--gold);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s ease;
-    }
+    /* Mobile App Header */
+    .app-header { position: sticky; top: 0; z-index: 50; background: rgba(15, 21, 19, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-subtle); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand-group { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .logo-frame { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-elevated); border: 1px solid var(--gold-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+    .logo-frame img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .logo-fallback { font-family: var(--font-serif); font-size: 1.4rem; font-weight: 700; color: var(--gold); }
+    .brand-text { display: flex; flex-direction: column; min-width: 0; }
+    .brand-name { font-family: var(--font-serif); font-size: 1.35rem; font-weight: 700; color: var(--ivory); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
+    .brand-meta { font-size: 0.72rem; color: var(--gold); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .circle-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-surface); border: 1px solid var(--gold-border); color: var(--gold); display: flex; align-items: center; justify-content: center; transition: background 0.2s ease; }
     .circle-btn:active { background: var(--gold-soft); }
     .circle-btn svg { width: 16px; height: 16px; }
 
-    /* Search & Categories */
-    .controls-wrapper {
-      position: sticky;
-      top: 69px; /* Height of the app-header */
-      z-index: 45;
-      background: rgba(15, 21, 19, 0.95);
-      backdrop-filter: blur(12px);
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-
+    /* Sticky Filters */
+    .controls-wrapper { position: sticky; top: 69px; z-index: 45; background: rgba(15, 21, 19, 0.95); backdrop-filter: blur(12px); padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); transition: top 0.2s; }
     .search-row { display: flex; gap: 10px; margin-bottom: 12px; }
     .search-box { position: relative; flex: 1; }
     .search-box svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--ivory-dim); }
-    .search-input { width: 100%; padding: 10px 36px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--ivory); font-size: 0.9rem; }
-    .search-input:focus { border-color: var(--gold); }
-    
-    .veg-Toggle { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: var(--radius-md); background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--ivory-muted); font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+    .search-input { width: 100%; padding: 10px 36px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--ivory); font-size: 0.9rem; }
+    .veg-Toggle { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--ivory-muted); font-size: 0.78rem; font-weight: 600; cursor: pointer; }
     .veg-Toggle.active { border-color: var(--veg-green); background: rgba(46, 158, 91, 0.15); color: var(--ivory); }
-
     .category-strip { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
     .category-strip::-webkit-scrollbar { display: none; }
-    .cat-pill { padding: 6px 14px; border-radius: 99px; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--ivory-muted); font-size: 0.82rem; font-weight: 600; white-space: nowrap; cursor: pointer; transition: all 0.2s ease; }
+    .cat-pill { padding: 6px 14px; border-radius: 99px; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--ivory-muted); font-size: 0.82rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
     .cat-pill.active { background: var(--gold); color: #101614; border-color: var(--gold); }
 
-    /* Menu Container */
+    /* Menu Grid */
     .menu-container { padding: 16px 16px 80px; max-width: 800px; margin: 0 auto; }
-    
     .section-header { margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle); }
     .section-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--ivory); }
-    .section-subtitle { font-size: 0.8rem; color: var(--ivory-dim); margin-top: 2px; }
-
     .food-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
     @media (min-width: 600px) { .food-grid { grid-template-columns: repeat(2, 1fr); } }
 
-    /* Compact Food Cards */
-    .food-card { display: flex; gap: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; cursor: pointer; }
+    /* Deal Food Cards */
+    .food-card { display: flex; gap: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 12px; cursor: pointer; position: relative; overflow: hidden; }
     .food-card.unavailable { opacity: 0.5; }
-    
     .food-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
     .card-badges { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
-    
-    .diet-icon { width: 12px; height: 12px; border: 1.5px solid var(--veg-green); border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .diet-icon { width: 12px; height: 12px; border: 1.5px solid var(--veg-green); border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; }
     .diet-icon::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--veg-green); }
     .diet-icon.non-veg { border-color: var(--nonveg-red); }
-    .diet-icon.non-veg::after { background: var(--nonveg-red); }
-
-    .badge-bestseller { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; padding: 2px 5px; border-radius: 4px; background: var(--gold-soft); color: var(--gold); border: 1px solid var(--gold-border); }
+    .diet-icon.non-veg::after { background: var(--nonveg-red); border-radius: 1px; }
+    
+    .badge-deal { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 2px 5px; border-radius: 4px; background: rgba(224, 82, 82, 0.15); color: #ff9e9e; border: 1px solid rgba(224, 82, 82, 0.4); }
+    .badge-bestseller { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 2px 5px; border-radius: 4px; background: var(--gold-soft); color: var(--gold); border: 1px solid var(--gold-border); }
     
     .food-name { font-size: 0.98rem; font-weight: 600; color: var(--ivory); line-height: 1.2; margin-bottom: 2px; }
+    .price-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
     .food-price { font-size: 0.95rem; font-weight: 700; color: var(--gold); }
-    .food-desc { font-size: 0.78rem; color: var(--ivory-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 4px; }
+    .price-slashed { font-size: 0.8rem; color: var(--ivory-dim); text-decoration: line-through; }
+    .food-desc { font-size: 0.78rem; color: var(--ivory-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: auto; }
 
-    .food-media { width: 90px; height: 90px; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-subtle); flex-shrink: 0; overflow: hidden; position: relative; }
+    .food-media { width: 90px; height: 90px; border-radius: 8px; background: var(--bg-elevated); border: 1px solid var(--border-subtle); flex-shrink: 0; overflow: hidden; position: relative; }
     .food-media img { width: 100%; height: 100%; object-fit: cover; }
     .unavailable-ribbon { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); color: #f28b82; font-size: 0.65rem; font-weight: 700; text-align: center; padding: 2px; }
-    
     .placeholder-art { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--ivory-dim); }
     .placeholder-art svg { width: 24px; height: 24px; }
 
-    /* Footer Details */
+    /* Footer & Modals */
     .site-footer { background: var(--bg-surface); border-top: 1px solid var(--border-subtle); padding: 32px 16px; text-align: center; }
     .footer-logo { font-family: var(--font-serif); font-size: 1.4rem; color: var(--gold); margin-bottom: 12px; }
-    .footer-text { font-size: 0.85rem; color: var(--ivory-muted); max-width: 400px; margin: 0 auto 8px; line-height: 1.5; }
-    .footer-services { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-    .service-tag { padding: 4px 10px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); font-size: 0.75rem; color: var(--ivory-muted); }
-    .footer-bottom { border-top: 1px solid var(--border-subtle); padding-top: 16px; margin-top: 16px; font-size: 0.75rem; color: var(--ivory-dim); display: flex; justify-content: space-between; max-width: 800px; margin: 16px auto 0; }
-
-    /* Modal */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
+    .footer-text { font-size: 0.85rem; color: var(--ivory-muted); margin: 0 auto 8px; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
     .modal-backdrop.open { display: flex; }
     .modal-sheet { background: var(--bg-card); border-top: 1px solid var(--gold-border); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; position: relative; animation: slideUp 0.25s ease-out; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 1px solid var(--border-subtle); color: var(--ivory); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
+    .modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.6); color: var(--ivory); display: flex; align-items: center; justify-content: center; z-index: 2; }
     .modal-image-wrap { width: 100%; height: 220px; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .modal-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .modal-body { padding: 20px; }
-    .modal-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--ivory); margin: 6px 0; }
-    .modal-price { font-size: 1.15rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
-    .modal-desc { font-size: 0.9rem; color: var(--ivory-muted); line-height: 1.5; }
+    .modal-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; margin: 6px 0; }
   </style>
 </head>
 <body>
 
-  <!-- Sleek App Header -->
-  <header class="app-header">
+  <!-- Global Sales/Deals Banner -->
+  <div id="announcementBanner"></div>
+
+  <!-- Mobile App Header -->
+  <header class="app-header" id="appHeader">
     <div class="brand-group">
-      <!-- Logo Container -->
       <div class="logo-frame">
-        <img id="logoImage" src="" alt="Restaurant Logo" />
+        <img id="logoImage" src="" alt="Logo" />
         <div id="logoFallback" class="logo-fallback">A</div>
       </div>
-      
       <div class="brand-text">
         <h1 class="brand-name" id="heroName">Anna Dosa</h1>
         <div class="brand-meta" id="topEstablished">Loading...</div>
       </div>
     </div>
-
-    <!-- Quick Action Buttons -->
     <div class="header-actions">
-      <a href="#" id="topCallLink" class="circle-btn" aria-label="Call">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-        </svg>
-      </a>
-      <a href="#" target="_blank" rel="noopener" id="topDirectionsLink" class="circle-btn" aria-label="Directions">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-        </svg>
-      </a>
+      <a href="#" id="topCallLink" class="circle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>
+      <a href="#" target="_blank" id="topDirectionsLink" class="circle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></a>
     </div>
   </header>
 
-  <!-- Sticky Search & Category Bar -->
-  <div class="controls-wrapper">
+  <!-- Sticky Controls -->
+  <div class="controls-wrapper" id="controlsWrap">
     <div class="search-row">
       <div class="search-box">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="search" id="searchInput" class="search-input" placeholder="Search menu..." />
       </div>
-      <button type="button" id="vegFilterBtn" class="veg-Toggle">
-        <span class="diet-icon"></span> Veg
-      </button>
+      <button type="button" id="vegFilterBtn" class="veg-Toggle"><span class="diet-icon"></span> Veg</button>
     </div>
     <div class="category-strip" id="categoryStrip"></div>
   </div>
 
-  <!-- Main Digital Menu -->
   <main class="menu-container" id="menuContainer">
     <div style="text-align:center; padding: 40px; color:var(--gold);">Loading Menu...</div>
   </main>
 
-  <!-- Dish Detail Modal -->
   <div class="modal-backdrop" id="itemModal">
     <div class="modal-sheet">
       <button type="button" class="modal-close" id="modalCloseBtn">✕</button>
@@ -279,21 +144,17 @@
       <div class="modal-body">
         <div class="card-badges" id="modalBadges"></div>
         <h2 class="modal-title" id="modalTitle"></h2>
-        <div class="modal-price" id="modalPrice"></div>
+        <div class="price-row" id="modalPriceRow"></div>
         <p class="modal-desc" id="modalDesc"></p>
       </div>
     </div>
   </div>
 
-  <!-- Footer Info -->
   <footer class="site-footer">
     <h3 class="footer-logo" id="footerName">Anna South Indian Dosa</h3>
-    <div class="footer-services" id="footerServices"></div>
     <p class="footer-text" id="footerAddress">PNB St, Subhash Chowk, Sirsa</p>
     <p class="footer-text" style="color:var(--gold);" id="footerHours">Hours Loading...</p>
-    <p class="footer-text" style="margin-top:12px;">Call us: <a href="#" id="footerPhoneLink" style="color:var(--ivory);font-weight:600;"></a></p>
-    
-    <div class="footer-bottom">
+    <div style="margin-top:20px; font-size:0.75rem; color:var(--ivory-dim); display:flex; justify-content:space-between; max-width:800px; margin:20px auto 0; border-top:1px solid var(--border-subtle); padding-top:16px;">
       <span>© <span id="currentYear"></span> All prices in INR.</span>
       <a href="/admin.html" style="color:var(--ivory-dim);">Owner Portal</a>
     </div>
@@ -301,87 +162,62 @@
 
   <script>
     (function () {
-      'use strict';
       document.getElementById('currentYear').textContent = new Date().getFullYear();
-
       const state = { settings: null, categories: [], items: [], activeCategory: 'all', searchQuery: '', vegOnly: false };
-      const menuContainer = document.getElementById('menuContainer');
-      const categoryStrip = document.getElementById('categoryStrip');
-      const searchInput = document.getElementById('searchInput');
-      const vegFilterBtn = document.getElementById('vegFilterBtn');
-      const itemModal = document.getElementById('itemModal');
 
       function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str == null ? '' : String(str); return d.innerHTML; }
-      function formatINR(paise) { const rs = Number(paise || 0) / 100; return '₹' + (Number.isInteger(rs) ? rs.toString() : rs.toFixed(2)); }
+      function formatINR(paise) { return '₹' + (Number(paise || 0) / 100).toFixed(0); }
+      function getPlaceholderSvg() { return `<div class="placeholder-art"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17h18M5 17C5 12 8 9 12 9s7 3 7 8M12 6v3"/></svg></div>`; }
 
-      function getPlaceholderSvg() {
-        return `<div class="placeholder-art"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17h18M5 17C5 12 8 9 12 9s7 3 7 8M12 6v3"/></svg></div>`;
-      }
-
-      function renderRestaurantSettings(settings) {
+      function renderSettings(settings) {
         if (!settings) return;
         const add = settings.additional_settings || {};
         const name = settings.restaurant_name || 'Anna Dosa';
         
-        document.title = `${name} — Menu`;
-        document.getElementById('heroName').textContent = name;
-        document.getElementById('footerName').textContent = name;
-        
-        // Brand Meta (e.g., "Since 2001 · Sirsa")
-        const est = add.established || '';
-        const hindi = add.hindi_name || 'Sirsa';
-        document.getElementById('topEstablished').textContent = est ? `${est} · ${hindi}` : hindi;
-
-        // Logo Logic
-        const logoImg = document.getElementById('logoImage');
-        const logoFallback = document.getElementById('logoFallback');
-        if (settings.logo_url) {
-          logoImg.src = escapeHtml(settings.logo_url);
-          logoImg.style.display = 'block';
-          logoFallback.style.display = 'none';
-        } else {
-          logoImg.style.display = 'none';
-          logoFallback.style.display = 'block';
-          logoFallback.textContent = name.charAt(0).toUpperCase();
+        // Announcements
+        if (settings.announcement) {
+          const banner = document.getElementById('announcementBanner');
+          banner.textContent = settings.announcement;
+          banner.style.display = 'block';
+          // Adjust sticky filter offset when banner is visible
+          document.getElementById('controlsWrap').style.top = (69 + banner.offsetHeight) + 'px';
         }
 
-        // Links & Footer
-        const cleanPhone = String(settings.phone || '').replace(/\s+/g, '');
-        document.getElementById('topCallLink').href = `tel:${cleanPhone}`;
-        document.getElementById('footerPhoneLink').href = `tel:${cleanPhone}`;
-        document.getElementById('footerPhoneLink').textContent = settings.phone;
-        
-        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' ' + settings.address)}`;
-        document.getElementById('topDirectionsLink').href = mapUrl;
-        
+        document.getElementById('heroName').textContent = name;
+        document.getElementById('footerName').textContent = name;
+        document.getElementById('topEstablished').textContent = add.established ? `${add.established} · ${add.hindi_name || 'Sirsa'}` : 'Sirsa';
+
+        // Logo System
+        if (settings.logo_url) {
+          document.getElementById('logoImage').src = escapeHtml(settings.logo_url);
+          document.getElementById('logoImage').style.display = 'block';
+          document.getElementById('logoFallback').style.display = 'none';
+        } else {
+          document.getElementById('logoFallback').textContent = name.charAt(0).toUpperCase();
+        }
+
+        const phone = String(settings.phone || '').replace(/\s+/g, '');
+        document.getElementById('topCallLink').href = `tel:${phone}`;
+        document.getElementById('topDirectionsLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' ' + settings.address)}`;
         document.getElementById('footerAddress').textContent = settings.address;
         document.getElementById('footerHours').textContent = settings.opening_hours;
-
-        const servicesWrap = document.getElementById('footerServices');
-        servicesWrap.innerHTML = '';
-        (settings.services || []).forEach(srv => {
-          servicesWrap.innerHTML += `<span class="service-tag">${escapeHtml(srv)}</span>`;
-        });
       }
 
-      function renderCategoryPills() {
-        categoryStrip.innerHTML = `<button type="button" class="cat-pill ${state.activeCategory === 'all' ? 'active' : ''}" data-id="all">All Dishes</button>`;
-        state.categories.forEach((cat) => {
-          categoryStrip.innerHTML += `<button type="button" class="cat-pill ${state.activeCategory === String(cat.id) ? 'active' : ''}" data-id="${cat.id}">${escapeHtml(cat.name)}</button>`;
+      function renderCategories() {
+        const strip = document.getElementById('categoryStrip');
+        strip.innerHTML = `<button class="cat-pill ${state.activeCategory === 'all' ? 'active' : ''}" data-id="all">All Dishes</button>`;
+        state.categories.forEach(cat => {
+          strip.innerHTML += `<button class="cat-pill ${state.activeCategory === String(cat.id) ? 'active' : ''}" data-id="${cat.id}">${escapeHtml(cat.name)}</button>`;
         });
 
-        categoryStrip.querySelectorAll('.cat-pill').forEach(btn => {
+        strip.querySelectorAll('.cat-pill').forEach(btn => {
           btn.addEventListener('click', (e) => {
             state.activeCategory = e.target.dataset.id;
-            renderCategoryPills();
+            renderCategories();
             renderMenu();
             if (state.activeCategory !== 'all') {
               const el = document.getElementById(`cat-${state.activeCategory}`);
-              if (el) {
-                const headerOffset = 130; 
-                const elPos = el.getBoundingClientRect().top + window.pageYOffset;
-                window.scrollTo({ top: elPos - headerOffset, behavior: 'smooth' });
-              }
+              if (el) window.scrollTo({ top: (el.getBoundingClientRect().top + window.pageYOffset) - 130, behavior: 'smooth' });
             } else {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -393,120 +229,97 @@
         const card = document.createElement('article');
         card.className = 'food-card' + (item.is_available ? '' : ' unavailable');
         
-        const badgesHtml = `
-          <div class="card-badges">
-            <span class="diet-icon ${item.is_vegetarian ? '' : 'non-veg'}"></span>
-            ${item.is_featured ? '<span class="badge-bestseller">★ Bestseller</span>' : ''}
-          </div>
-        `;
+        let badgesHtml = `<span class="diet-icon ${item.is_vegetarian ? '' : 'non-veg'}"></span>`;
+        if (item.custom_badge) badgesHtml += `<span class="badge-deal">${escapeHtml(item.custom_badge)}</span>`;
+        else if (item.is_featured) badgesHtml += `<span class="badge-bestseller">★ Bestseller</span>`;
+
+        let priceHtml = `<div class="food-price">${formatINR(item.price_paise)}</div>`;
+        if (item.original_price_paise > item.price_paise) {
+          priceHtml = `<div class="food-price">${formatINR(item.price_paise)}</div> <div class="price-slashed">${formatINR(item.original_price_paise)}</div>`;
+        }
 
         card.innerHTML = `
           <div class="food-info">
-            ${badgesHtml}
+            <div class="card-badges">${badgesHtml}</div>
             <h3 class="food-name">${escapeHtml(item.name)}</h3>
-            <div class="food-price">${formatINR(item.price_paise)}</div>
+            <div class="price-row">${priceHtml}</div>
             ${item.description ? `<p class="food-desc">${escapeHtml(item.description)}</p>` : ''}
           </div>
           <div class="food-media">
             ${item.image_url ? `<img src="${escapeHtml(item.image_url)}" loading="lazy" />` : getPlaceholderSvg()}
-            ${!item.is_available ? '<div class="unavailable-ribbon">Unavailable</div>' : ''}
+            ${!item.is_available ? '<div class="unavailable-ribbon">Sold Out</div>' : ''}
           </div>
         `;
-
-        const img = card.querySelector('img');
-        if (img) img.addEventListener('error', () => { card.querySelector('.food-media').innerHTML = getPlaceholderSvg(); });
-        
         card.addEventListener('click', () => openItemModal(item));
         return card;
       }
 
       function renderMenu() {
-        menuContainer.innerHTML = '';
+        const container = document.getElementById('menuContainer');
+        container.innerHTML = '';
         const q = state.searchQuery.trim().toLowerCase();
         
-        const filtered = state.items.filter((item) => {
-          if (state.vegOnly && !item.is_vegetarian) return false;
-          if (state.activeCategory !== 'all' && String(item.category_id) !== String(state.activeCategory)) return false;
+        const filtered = state.items.filter((i) => {
+          if (state.vegOnly && !i.is_vegetarian) return false;
+          if (state.activeCategory !== 'all' && String(i.category_id) !== String(state.activeCategory)) return false;
           if (!q) return true;
-          return String(item.name || '').toLowerCase().includes(q) || String(item.description || '').toLowerCase().includes(q);
+          return String(i.name).toLowerCase().includes(q) || String(i.description).toLowerCase().includes(q);
         });
 
-        if (filtered.length === 0) {
-          menuContainer.innerHTML = `<div style="text-align:center;padding:40px;color:var(--ivory-dim);">No dishes found matching your criteria.</div>`;
-          return;
-        }
+        if (!filtered.length) { container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--ivory-dim);">No dishes found.</div>`; return; }
 
-        // Bestsellers Section (Only on "All Dishes" without text search)
         if (state.activeCategory === 'all' && !q) {
-          const feats = filtered.filter(i => i.is_featured && i.is_available);
+          const feats = filtered.filter(i => (i.is_featured || i.custom_badge) && i.is_available);
           if (feats.length > 0) {
             const sec = document.createElement('div');
-            sec.innerHTML = `<div class="section-header"><h2 class="section-title"><span style="color:var(--gold);">★</span> House Favorites</h2></div><div class="food-grid"></div>`;
-            const grid = sec.querySelector('.food-grid');
-            feats.forEach(i => grid.appendChild(createFoodCard(i)));
-            menuContainer.appendChild(sec);
+            sec.innerHTML = `<div class="section-header"><h2 class="section-title"><span style="color:var(--gold);">★</span> Recommended</h2></div><div class="food-grid"></div>`;
+            feats.forEach(i => sec.querySelector('.food-grid').appendChild(createFoodCard(i)));
+            container.appendChild(sec);
           }
         }
 
-        // Categories Map
-        state.categories.forEach((cat) => {
+        state.categories.forEach(cat => {
           const catItems = filtered.filter(i => String(i.category_id) === String(cat.id));
           if (catItems.length === 0) return;
-
           const sec = document.createElement('div');
           sec.id = `cat-${cat.id}`;
-          sec.innerHTML = `
-            <div class="section-header">
-              <h2 class="section-title">${escapeHtml(cat.name)}</h2>
-              ${cat.description ? `<p class="section-subtitle">${escapeHtml(cat.description)}</p>` : ''}
-            </div>
-            <div class="food-grid"></div>
-          `;
-          const grid = sec.querySelector('.food-grid');
-          catItems.forEach(i => grid.appendChild(createFoodCard(i)));
-          menuContainer.appendChild(sec);
+          sec.innerHTML = `<div class="section-header"><h2 class="section-title">${escapeHtml(cat.name)}</h2></div><div class="food-grid"></div>`;
+          catItems.forEach(i => sec.querySelector('.food-grid').appendChild(createFoodCard(i)));
+          container.appendChild(sec);
         });
       }
 
       function openItemModal(item) {
-        const wrap = document.getElementById('modalImageWrap');
-        wrap.innerHTML = item.image_url ? `<img src="${escapeHtml(item.image_url)}" />` : getPlaceholderSvg();
+        const modal = document.getElementById('itemModal');
+        document.getElementById('modalImageWrap').innerHTML = item.image_url ? `<img src="${escapeHtml(item.image_url)}" />` : getPlaceholderSvg();
         
-        document.getElementById('modalBadges').innerHTML = `
-          <span class="diet-icon ${item.is_vegetarian ? '' : 'non-veg'}"></span>
-          <span style="font-size:0.75rem;color:var(--ivory-muted);">${item.is_vegetarian ? 'Vegetarian' : 'Non-Vegetarian'}</span>
-          ${item.is_featured ? '<span class="badge-bestseller" style="margin-left:6px;">★ Bestseller</span>' : ''}
-        `;
+        let b = `<span class="diet-icon ${item.is_vegetarian ? '' : 'non-veg'}"></span><span style="font-size:0.75rem;color:var(--ivory-muted);margin-left:6px;">${item.is_vegetarian ? 'Vegetarian' : 'Non-Vegetarian'}</span>`;
+        if (item.custom_badge) b += `<span class="badge-deal" style="margin-left:8px;">${escapeHtml(item.custom_badge)}</span>`;
+        else if (item.is_featured) b += `<span class="badge-bestseller" style="margin-left:8px;">★ Bestseller</span>`;
+        
+        document.getElementById('modalBadges').innerHTML = b;
         document.getElementById('modalTitle').textContent = item.name;
-        document.getElementById('modalPrice').textContent = formatINR(item.price_paise);
+        
+        let p = `<div class="food-price" style="font-size:1.15rem;">${formatINR(item.price_paise)}</div>`;
+        if (item.original_price_paise > item.price_paise) p += `<div class="price-slashed" style="margin-left:8px;">${formatINR(item.original_price_paise)}</div>`;
+        document.getElementById('modalPriceRow').innerHTML = p;
+        
         document.getElementById('modalDesc').textContent = item.description || '';
-        itemModal.classList.add('open');
+        modal.classList.add('open');
       }
 
-      document.getElementById('modalCloseBtn').addEventListener('click', () => itemModal.classList.remove('open'));
-      itemModal.addEventListener('click', (e) => { if (e.target === itemModal) itemModal.classList.remove('open'); });
-
-      searchInput.addEventListener('input', (e) => { state.searchQuery = e.target.value; renderMenu(); });
-      vegFilterBtn.addEventListener('click', () => {
-        state.vegOnly = !state.vegOnly;
-        vegFilterBtn.classList.toggle('active', state.vegOnly);
-        renderMenu();
-      });
+      document.getElementById('modalCloseBtn').addEventListener('click', () => document.getElementById('itemModal').classList.remove('open'));
+      document.getElementById('itemModal').addEventListener('click', (e) => { if (e.target === document.getElementById('itemModal')) e.target.classList.remove('open'); });
+      document.getElementById('searchInput').addEventListener('input', (e) => { state.searchQuery = e.target.value; renderMenu(); });
+      document.getElementById('vegFilterBtn').addEventListener('click', (e) => { state.vegOnly = !state.vegOnly; e.target.classList.toggle('active', state.vegOnly); renderMenu(); });
 
       async function init() {
         try {
           const res = await fetch('/api/menu');
-          if (!res.ok) throw new Error();
           const data = await res.json();
-          state.settings = data.settings;
-          state.categories = data.categories || [];
-          state.items = data.items || [];
-          renderRestaurantSettings(state.settings);
-          renderCategoryPills();
-          renderMenu();
-        } catch {
-          menuContainer.innerHTML = `<div style="text-align:center;padding:40px;color:#f28b82;">Could not load menu. Please refresh.</div>`;
-        }
+          state.settings = data.settings; state.categories = data.categories || []; state.items = data.items || [];
+          renderSettings(state.settings); renderCategories(); renderMenu();
+        } catch { document.getElementById('menuContainer').innerHTML = `<div style="text-align:center;padding:40px;color:#f28b82;">Could not load menu.</div>`; }
       }
       init();
     })();
