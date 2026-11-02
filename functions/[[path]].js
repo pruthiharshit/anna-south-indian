@@ -14,22 +14,15 @@ function json(data, status = 200, extraHeaders = {}) {
   });
 }
 
+// Minimal Database Initialization
 async function ensureDatabase(db) {
   if (dbInitialized) return;
   await db.batch([
     db.prepare(`CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, description TEXT DEFAULT '', display_order INTEGER NOT NULL DEFAULT 0, is_active INTEGER NOT NULL DEFAULT 1)`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS menu_items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT DEFAULT '', price_paise INTEGER NOT NULL DEFAULT 0, category_id INTEGER NOT NULL, image_key TEXT DEFAULT '', image_url TEXT DEFAULT '', is_vegetarian INTEGER NOT NULL DEFAULT 1, is_available INTEGER NOT NULL DEFAULT 1, is_featured INTEGER NOT NULL DEFAULT 0, display_order INTEGER NOT NULL DEFAULT 0)`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS restaurant_settings (id INTEGER PRIMARY KEY CHECK (id = 1), restaurant_name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', address TEXT NOT NULL, phone TEXT NOT NULL, opening_hours TEXT NOT NULL DEFAULT '', services TEXT NOT NULL DEFAULT '["Dine-in","Drive-through","Delivery"]', additional_settings TEXT NOT NULL DEFAULT '{"hindi_name":"अन्ना साउथ इंडियन डोसा","established":"Since 2001"}')`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS menu_items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT DEFAULT '', price_paise INTEGER NOT NULL DEFAULT 0, original_price_paise INTEGER NOT NULL DEFAULT 0, custom_badge TEXT DEFAULT '', category_id INTEGER NOT NULL, image_key TEXT DEFAULT '', image_url TEXT DEFAULT '', is_vegetarian INTEGER NOT NULL DEFAULT 1, is_available INTEGER NOT NULL DEFAULT 1, is_featured INTEGER NOT NULL DEFAULT 0, display_order INTEGER NOT NULL DEFAULT 0)`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS restaurant_settings (id INTEGER PRIMARY KEY CHECK (id = 1), restaurant_name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', address TEXT NOT NULL, phone TEXT NOT NULL, opening_hours TEXT NOT NULL DEFAULT '', announcement TEXT DEFAULT '', logo_url TEXT DEFAULT '', services TEXT NOT NULL DEFAULT '["Dine-in","Drive-through","Delivery"]', additional_settings TEXT NOT NULL DEFAULT '{"hindi_name":"अन्ना साउथ इंडियन डोसा","established":"Since 2001"}')`),
     db.prepare(`CREATE TABLE IF NOT EXISTS authorized_admins (email TEXT PRIMARY KEY, password_note TEXT DEFAULT '', added_at TEXT)`),
-    db.prepare(`INSERT OR IGNORE INTO restaurant_settings (id, restaurant_name, address, phone, opening_hours) VALUES (1, 'Anna South Indian Dosa', 'PNB St, near Geeta Bhawan, Rori Bazar, B Block, Subhash Chowk, Sirsa, Haryana 125055', '098135 01421', 'Closes 10:00 PM')`),
-    db.prepare(`
-      INSERT OR IGNORE INTO categories (name, description, display_order, is_active) VALUES
-        ('Dosa', 'Crisp, golden fermented crepe specialties', 1, 1),
-        ('Idli & Vada', 'Steamed rice cakes and crisp lentil donuts', 2, 1),
-        ('Uttapam', 'Thick, savory South Indian griddle pancakes', 3, 1),
-        ('South Indian Meals', 'Complete traditional platters', 4, 1),
-        ('Beverages', 'Refreshing drinks and hot beverages', 5, 1)
-    `)
+    db.prepare(`INSERT OR IGNORE INTO restaurant_settings (id, restaurant_name, address, phone, opening_hours) VALUES (1, 'Anna South Indian Dosa', 'PNB St, near Geeta Bhawan, Rori Bazar, B Block, Subhash Chowk, Sirsa, Haryana 125055', '98135-01421 / 98219-14139', 'Closes 10:00 PM')`)
   ]);
 
   const upgrades = [
@@ -101,7 +94,6 @@ async function cleanupOrphanedR2Image(env, imageKey) {
   } catch {}
 }
 
-// MAIN EXECUTION BLOCK
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -137,7 +129,7 @@ export async function onRequest(context) {
       const [sRes, cRes, iRes] = await env.DB.batch([
         env.DB.prepare(`SELECT * FROM restaurant_settings WHERE id = 1`),
         env.DB.prepare(`SELECT * FROM categories WHERE is_active = 1 ORDER BY display_order ASC, id ASC`),
-        env.DB.prepare(`SELECT m.* FROM menu_items m INNER JOIN categories c ON c.id = m.category_id WHERE c.is_active = 1 ORDER BY m.display_order ASC, m.id ASC`)
+        env.DB.prepare(`SELECT m.* FROM menu_items m INNER JOIN categories c ON c.id = m.category_id WHERE c.is_active = 1 ORDER BY c.display_order ASC, m.display_order ASC, m.id ASC`)
       ]);
       const raw = sRes.results[0] || {};
       let services = ['Dine-in', 'Drive-through', 'Delivery'];
@@ -168,7 +160,7 @@ export async function onRequest(context) {
     if (path === '/api/admin-data' && method === 'GET') {
       const [cRes, iRes, sRes, aRes] = await env.DB.batch([
         env.DB.prepare(`SELECT c.*, COUNT(m.id) AS item_count FROM categories c LEFT JOIN menu_items m ON m.category_id = c.id GROUP BY c.id ORDER BY c.display_order ASC, c.id ASC`),
-        env.DB.prepare(`SELECT m.*, c.name AS category_name FROM menu_items m LEFT JOIN categories c ON c.id = m.category_id ORDER BY m.display_order ASC, m.id DESC`),
+        env.DB.prepare(`SELECT m.*, c.name AS category_name FROM menu_items m LEFT JOIN categories c ON c.id = m.category_id ORDER BY c.display_order ASC, m.display_order ASC, m.id DESC`),
         env.DB.prepare(`SELECT * FROM restaurant_settings WHERE id = 1`),
         env.DB.prepare(`SELECT email, password_note, added_at FROM authorized_admins ORDER BY added_at ASC`)
       ]);
