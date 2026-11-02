@@ -1,4 +1,4 @@
-const FIREBASE_API_KEY = 'AIzaSyDxxCYCn-HL6ifsoGiQZ_quskyjJgN-JXs';
+const DEFAULT_FIREBASE_PROJECT_ID = 'anna-menu';
 const SAFE_KEY_REGEX = /^[a-zA-Z0-9_-]{3,120}\.(webp|jpg|jpeg|png)$/;
 let dbInitialized = false;
 
@@ -26,42 +26,52 @@ async function ensureDatabase(db) {
   dbInitialized = true;
 }
 
-// 1. BULLETPROOF FIREBASE VERIFIER (Uses Google REST API instead of Cloudflare Crypto)
+function base64UrlToUint8Array(str) {
+  let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = base64.length % 4;
+  if (pad) { if (pad === 1) throw new Error('Invalid base64 string length'); base64 += new Array(5 - pad).join('='); }
+  const binary = atob(base64); const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
 async function verifyFirebaseToken(request, env) {
   const authHeader = request.headers.get('Authorization') || '';
   if (!authHeader.startsWith('Bearer ')) return { ok: false, error: 'Missing authentication token.' };
   
-  const token = authHeader.slice(7).trim();
+  const parts = authHeader.slice(7).trim().split('.');
+  if (parts.length !== 3) return { ok: false, error: 'Invalid token format.' };
 
   try {
-    // Send token directly to Google to verify it
-    const fbRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken: token })
-    });
-    
-    const fbData = await fbRes.json();
-    
-    if (!fbRes.ok || !fbData.users || fbData.users.length === 0) {
-      return { ok: false, error: 'Firebase rejected session: ' + (fbData.error?.message || 'Invalid Token') };
-    }
+    const header = JSON.parse(new TextDecoder().decode(base64UrlToUint8Array(parts[0])));
+    const payload = JSON.parse(new TextDecoder().decode(base64UrlToUint8Array(parts[1])));
+    const signature = base64UrlToUint8Array(parts[2]);
+    const pid = (env.FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_PROJECT_ID).trim();
 
-    const email = (fbData.users[0].email || '').toLowerCase();
-    
-    // Check if authorized in your Database
+    if (payload.exp <= Math.floor(Date.now() / 1000)) return { ok: false, error: 'Session expired.' };
+    if (pid && payload.aud !== pid) return { ok: false, error: 'Project mismatch.' };
+
+    const jwksRes = await fetch('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com');
+    const { keys } = await jwksRes.json();
+    const jwk = (keys || []).find((k) => k.kid === header.kid);
+    if (!jwk) return { ok: false, error: 'Signing key not found.' };
+
+    if (!jwk.key_ops) jwk.key_ops = ["verify"];
+
+    const cryptoKey = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+    const isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signature, new TextEncoder().encode(`${parts[0]}.${parts[1]}`));
+    if (!isValid) return { ok: false, error: 'Invalid token signature.' };
+
+    const email = (payload.email || '').toLowerCase();
     const countRow = await env.DB.prepare(`SELECT COUNT(*) AS c FROM authorized_admins`).first();
     if (!countRow || countRow.c === 0) {
       await env.DB.prepare(`INSERT INTO authorized_admins (email, added_at) VALUES (?, datetime('now'))`).bind(email).run();
     } else {
       const check = await env.DB.prepare(`SELECT email FROM authorized_admins WHERE email = ?`).bind(email).first();
-      if (!check) return { ok: false, error: `Email (${email}) is not authorized for dashboard access.` };
+      if (!check) return { ok: false, error: 'Email not authorized.' };
     }
-    
     return { ok: true, email };
-  } catch (err) {
-    return { ok: false, error: 'API Auth Error: ' + err.message };
-  }
+  } catch (err) { return { ok: false, error: 'Token JS Error: ' + err.message }; }
 }
 
 async function cleanupOrphanedR2Image(env, imageKey) {
@@ -79,8 +89,8 @@ export async function onRequest(context) {
     const path = url.pathname;
     const method = request.method.toUpperCase();
 
-    if (!env.DB) throw new Error("Cloudflare D1 Database binding is missing.");
-    if (!env.MEDIA_BUCKET) throw new Error("Cloudflare R2 Bucket binding is missing.");
+    if (!env.DB) throw new Error("Cloudflare D1 Database binding missing.");
+    if (!env.MEDIA_BUCKET) throw new Error("Cloudflare R2 Bucket binding missing.");
 
     if (path.startsWith('/media/')) {
       const key = path.slice('/media/'.length).trim();
@@ -88,9 +98,7 @@ export async function onRequest(context) {
       const object = await env.MEDIA_BUCKET.get(key, { onlyIf: request.headers });
       if (!object) return new Response('Not Found', { status: 404 });
       const headers = new Headers();
-      object.writeHttpMetadata(headers);
-      headers.set('ETag', object.httpEtag);
-      headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+      object.writeHttpMetadata(headers); headers.set('ETag', object.httpEtag); headers.set('Cache-Control', 'public, max-age=31536000, immutable');
       if (!('body' in object) || !object.body) return new Response(null, { status: 304, headers });
       return new Response(object.body, { status: 200, headers });
     }
@@ -105,30 +113,70 @@ export async function onRequest(context) {
           env.DB.prepare(`SELECT m.* FROM menu_items m INNER JOIN categories c ON c.id = m.category_id WHERE c.is_active = 1 ORDER BY c.display_order ASC, m.display_order ASC, m.id ASC`)
         ]);
         const raw = sRes.results[0] || {};
-        let services = ['Dine-in', 'Drive-through', 'Delivery'];
-        let additional = {};
-        try { services = JSON.parse(raw.services || '[]'); } catch {}
-        try { additional = JSON.parse(raw.additional_settings || '{}'); } catch {}
-
-        return json({
-          settings: {
-            restaurant_name: raw.restaurant_name || 'Anna South Indian Dosa',
-            address: raw.address || '',
-            phone: raw.phone || '',
-            opening_hours: raw.opening_hours || '',
-            announcement: raw.announcement || '',
-            logo_url: raw.logo_url || '',
-            services,
-            additional_settings: additional
-          },
-          categories: cRes.results || [],
-          items: iRes.results || []
-        });
+        let services = ['Dine-in', 'Drive-through', 'Delivery'], additional = {};
+        try { services = JSON.parse(raw.services || '[]'); } catch {} try { additional = JSON.parse(raw.additional_settings || '{}'); } catch {}
+        return json({ settings: { restaurant_name: raw.restaurant_name || '', address: raw.address || '', phone: raw.phone || '', opening_hours: raw.opening_hours || '', announcement: raw.announcement || '', logo_url: raw.logo_url || '', services, additional_settings: additional }, categories: cRes.results || [], items: iRes.results || [] });
       }
 
-      // ANY ROUTE BELOW THIS LINE REQUIRES LOGIN
       const auth = await verifyFirebaseToken(request, env);
       if (!auth.ok) return json({ error: auth.error }, 401);
+
+      // BULK MANAGEMENT API ENDPOINTS
+      if (path === '/api/bulk' && method === 'POST') {
+        const b = await request.json();
+        
+        if (b.action === 'replace_price') {
+          await env.DB.prepare(`UPDATE menu_items SET price_paise = ? WHERE price_paise = ?`).bind(Number(b.new_price_paise), Number(b.old_price_paise)).run();
+          return json({ ok: true });
+        }
+        
+        if (b.action === 'stock') {
+          if (b.category_id === 'all') {
+            await env.DB.prepare(`UPDATE menu_items SET is_available = ?`).bind(b.is_available ? 1 : 0).run();
+          } else {
+            await env.DB.prepare(`UPDATE menu_items SET is_available = ? WHERE category_id = ?`).bind(b.is_available ? 1 : 0, Number(b.category_id)).run();
+          }
+          return json({ ok: true });
+        }
+        
+        if (b.action === 'start_sale') {
+          const disc = Number(b.discount_percent);
+          const badge = String(b.badge || '');
+          // SQL trick: If item is already on sale, it uses the 'original_price_paise' as the base to calculate the new discount, preventing double-discounting bugs!
+          const q = `
+            UPDATE menu_items 
+            SET original_price_paise = CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END,
+                price_paise = CAST(ROUND((CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END) * ((100.0 - ?) / 100.0)) AS INTEGER),
+                custom_badge = ?
+            ${b.category_id !== 'all' ? 'WHERE category_id = ?' : ''}
+          `;
+          if (b.category_id !== 'all') {
+            await env.DB.prepare(q).bind(disc, badge, Number(b.category_id)).run();
+          } else {
+            await env.DB.prepare(q).bind(disc, badge).run();
+          }
+          return json({ ok: true });
+        }
+
+        if (b.action === 'end_sale') {
+          // SQL trick: Restores the true price, wipes the original_price column, wipes the badge.
+          const q = `
+            UPDATE menu_items 
+            SET price_paise = CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END,
+                original_price_paise = 0,
+                custom_badge = ''
+            ${b.category_id !== 'all' ? 'WHERE category_id = ? AND original_price_paise > 0' : 'WHERE original_price_paise > 0'}
+          `;
+          if (b.category_id !== 'all') {
+            await env.DB.prepare(q).bind(Number(b.category_id)).run();
+          } else {
+            await env.DB.prepare(q).run();
+          }
+          return json({ ok: true });
+        }
+        
+        return json({ error: 'Unknown bulk action' }, 400);
+      }
 
       if (path === '/api/admin-data' && method === 'GET') {
         const [cRes, iRes, sRes, aRes] = await env.DB.batch([
@@ -137,54 +185,33 @@ export async function onRequest(context) {
           env.DB.prepare(`SELECT * FROM restaurant_settings WHERE id = 1`),
           env.DB.prepare(`SELECT email, password_note, added_at FROM authorized_admins ORDER BY added_at ASC`)
         ]);
-        const raw = sRes.results[0] || {};
-        let services = ['Dine-in', 'Drive-through', 'Delivery'];
-        let additional = {};
-        try { services = JSON.parse(raw.services || '[]'); } catch {}
-        try { additional = JSON.parse(raw.additional_settings || '{}'); } catch {}
-
-        return json({
-          categories: cRes.results || [],
-          items: iRes.results || [],
-          settings: { ...raw, services, additional_settings: additional },
-          admins: aRes.results || []
-        });
+        const raw = sRes.results[0] || {}; let services = ['Dine-in'], additional = {}; try { services = JSON.parse(raw.services || '[]'); } catch {} try { additional = JSON.parse(raw.additional_settings || '{}'); } catch {}
+        return json({ categories: cRes.results || [], items: iRes.results || [], settings: { ...raw, services, additional_settings: additional }, admins: aRes.results || [] });
       }
 
       if (path === '/api/admins') {
         if (method === 'POST') {
-          const b = await request.json();
-          const email = String(b.email || '').trim().toLowerCase();
-          const passNote = String(b.password_note || '');
-          if (!email) return json({ error: 'Email is required.' }, 400);
-          await env.DB.prepare(`INSERT INTO authorized_admins (email, password_note, added_at) VALUES (?, ?, datetime('now')) ON CONFLICT(email) DO UPDATE SET password_note = excluded.password_note`).bind(email, passNote).run();
-          return json({ ok: true });
+          const b = await request.json(); const email = String(b.email || '').trim().toLowerCase();
+          await env.DB.prepare(`INSERT INTO authorized_admins (email, password_note, added_at) VALUES (?, ?, datetime('now')) ON CONFLICT(email) DO UPDATE SET password_note = excluded.password_note`).bind(email, String(b.password_note || '')).run(); return json({ ok: true });
         }
         if (method === 'DELETE') {
           const target = String(url.searchParams.get('email') || '').toLowerCase();
-          if (target === auth.email) return json({ error: 'You cannot revoke your own active account.' }, 400);
-          await env.DB.prepare(`DELETE FROM authorized_admins WHERE email = ?`).bind(target).run();
-          return json({ ok: true });
+          if (target === auth.email) return json({ error: 'Cannot revoke your own account.' }, 400);
+          await env.DB.prepare(`DELETE FROM authorized_admins WHERE email = ?`).bind(target).run(); return json({ ok: true });
         }
       }
 
       if (path === '/api/upload' && method === 'POST') {
-        const formData = await request.formData();
-        const file = formData.get('image');
-        if (!file) return json({ error: 'No image file received.' }, 400);
-        const buffer = await file.arrayBuffer();
+        const formData = await request.formData(), file = formData.get('image'); if (!file) return json({ error: 'No image' }, 400);
         const rand = Array.from(crypto.getRandomValues(new Uint8Array(6))).map((b) => b.toString(16).padStart(2, '0')).join('');
         const imageKey = `media-${Date.now()}-${rand}.webp`;
-        await env.MEDIA_BUCKET.put(imageKey, buffer, { httpMetadata: { contentType: 'image/webp', cacheControl: 'public, max-age=31536000, immutable' } });
+        await env.MEDIA_BUCKET.put(imageKey, await file.arrayBuffer(), { httpMetadata: { contentType: 'image/webp', cacheControl: 'public, max-age=31536000, immutable' } });
         return json({ ok: true, image_key: imageKey, image_url: `/media/${imageKey}` }, 201);
       }
 
       if (path === '/api/items') {
         if (method === 'POST' || method === 'PUT') {
-          const b = await request.json();
-          const id = Number(b.id || 0);
-          const imageKey = String(b.image_key || '').trim();
-          const imageUrl = imageKey ? `/media/${imageKey}` : '';
+          const b = await request.json(), id = Number(b.id || 0), imageKey = String(b.image_key || '').trim(), imageUrl = imageKey ? `/media/${imageKey}` : '';
           if (method === 'POST') {
             await env.DB.prepare(`INSERT INTO menu_items (name, description, price_paise, original_price_paise, custom_badge, category_id, image_key, image_url, is_vegetarian, is_available, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
               b.name, b.description || '', Number(b.price_paise || 0), Number(b.original_price_paise || 0), b.custom_badge || '', Number(b.category_id), imageKey, imageUrl, b.is_vegetarian ? 1 : 0, b.is_available ? 1 : 0, b.is_featured ? 1 : 0).run();
@@ -196,53 +223,25 @@ export async function onRequest(context) {
           }
           return json({ ok: true });
         }
-        if (method === 'PATCH') {
-          const b = await request.json();
-          await env.DB.prepare(`UPDATE menu_items SET is_available = ? WHERE id = ?`).bind(b.is_available ? 1 : 0, Number(b.id)).run();
-          return json({ ok: true });
-        }
-        if (method === 'DELETE') {
-          const id = Number(url.searchParams.get('id'));
-          const existing = await env.DB.prepare(`SELECT image_key FROM menu_items WHERE id = ?`).bind(id).first();
-          await env.DB.prepare(`DELETE FROM menu_items WHERE id = ?`).bind(id).run();
-          if (existing?.image_key) await cleanupOrphanedR2Image(env, existing.image_key);
-          return json({ ok: true });
-        }
+        if (method === 'PATCH') { const b = await request.json(); await env.DB.prepare(`UPDATE menu_items SET is_available = ? WHERE id = ?`).bind(b.is_available ? 1 : 0, Number(b.id)).run(); return json({ ok: true }); }
+        if (method === 'DELETE') { const id = Number(url.searchParams.get('id')), existing = await env.DB.prepare(`SELECT image_key FROM menu_items WHERE id = ?`).bind(id).first(); await env.DB.prepare(`DELETE FROM menu_items WHERE id = ?`).bind(id).run(); if (existing?.image_key) await cleanupOrphanedR2Image(env, existing.image_key); return json({ ok: true }); }
       }
 
       if (path === '/api/categories') {
-        if (method === 'POST') {
-          const b = await request.json();
-          const max = await env.DB.prepare(`SELECT COALESCE(MAX(display_order), 0) AS m FROM categories`).first();
-          await env.DB.prepare(`INSERT INTO categories (name, description, display_order, is_active) VALUES (?, ?, ?, ?)`).bind(b.name, b.description || '', (max?.m || 0) + 1, b.is_active ? 1 : 0).run();
-          return json({ ok: true });
-        }
-        if (method === 'PUT') {
-          const b = await request.json();
-          await env.DB.prepare(`UPDATE categories SET name = ?, description = ?, is_active = ? WHERE id = ?`).bind(b.name, b.description || '', b.is_active ? 1 : 0, Number(b.id)).run();
-          return json({ ok: true });
-        }
-        if (method === 'DELETE') {
-          const id = Number(url.searchParams.get('id'));
-          const used = await env.DB.prepare(`SELECT COUNT(*) AS c FROM menu_items WHERE category_id = ?`).bind(id).first();
-          if (used && used.c > 0) return json({ error: `Cannot delete category with ${used.c} dishes inside it.` }, 400);
-          await env.DB.prepare(`DELETE FROM categories WHERE id = ?`).bind(id).run();
-          return json({ ok: true });
-        }
+        if (method === 'POST') { const b = await request.json(), max = await env.DB.prepare(`SELECT COALESCE(MAX(display_order), 0) AS m FROM categories`).first(); await env.DB.prepare(`INSERT INTO categories (name, description, display_order, is_active) VALUES (?, ?, ?, ?)`).bind(b.name, b.description || '', (max?.m || 0) + 1, b.is_active ? 1 : 0).run(); return json({ ok: true }); }
+        if (method === 'PUT') { const b = await request.json(); await env.DB.prepare(`UPDATE categories SET name = ?, description = ?, is_active = ? WHERE id = ?`).bind(b.name, b.description || '', b.is_active ? 1 : 0, Number(b.id)).run(); return json({ ok: true }); }
+        if (method === 'DELETE') { const id = Number(url.searchParams.get('id')), used = await env.DB.prepare(`SELECT COUNT(*) AS c FROM menu_items WHERE category_id = ?`).bind(id).first(); if (used && used.c > 0) return json({ error: `Cannot delete category with ${used.c} dishes inside it.` }, 400); await env.DB.prepare(`DELETE FROM categories WHERE id = ?`).bind(id).run(); return json({ ok: true }); }
       }
 
       if (path === '/api/settings' && method === 'PUT') {
         const b = await request.json();
         await env.DB.prepare(`INSERT INTO restaurant_settings (id, restaurant_name, address, phone, opening_hours, announcement, logo_url, services, additional_settings) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET restaurant_name = excluded.restaurant_name, address = excluded.address, phone = excluded.phone, opening_hours = excluded.opening_hours, announcement = excluded.announcement, logo_url = excluded.logo_url, services = excluded.services, additional_settings = excluded.additional_settings`).bind(
-          b.restaurant_name || 'Anna South Indian Dosa', b.address || '', b.phone || '', b.opening_hours || '', b.announcement || '', b.logo_url || '', JSON.stringify(Array.isArray(b.services) ? b.services : ['Dine-in', 'Drive-through', 'Delivery']), JSON.stringify(b.additional_settings || {})
-        ).run();
-        return json({ ok: true });
+          b.restaurant_name || '', b.address || '', b.phone || '', b.opening_hours || '', b.announcement || '', b.logo_url || '', JSON.stringify(Array.isArray(b.services) ? b.services : []), JSON.stringify(b.additional_settings || {})
+        ).run(); return json({ ok: true });
       }
 
       return json({ error: 'API route not found' }, 404);
     }
     return context.next();
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-  }
+  } catch (error) { return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } }); }
 }
