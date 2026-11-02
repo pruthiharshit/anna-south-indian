@@ -19,7 +19,7 @@
     
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html { scroll-behavior: smooth; }
-    body { background-color: var(--bg-deep); color: var(--ivory); font-family: var(--font-sans); overflow-x: hidden; }
+    body { background-color: var(--bg-deep); color: var(--ivory); font-family: var(--font-sans); overflow-x: hidden; padding-bottom: 80px; }
     a { color: inherit; text-decoration: none; }
     button, input { font-family: inherit; outline: none; border: none; }
 
@@ -65,7 +65,7 @@
     .controls-wrapper {
       position: sticky; top: 68px; z-index: 45; background: rgba(15, 21, 19, 0.98);
       backdrop-filter: blur(12px); padding: 10px 16px; border-bottom: 1px solid var(--border-subtle);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25); /* Added shadow for depth */
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
     }
     .controls-inner { max-width: 820px; margin: 0 auto; }
     .search-row { display: flex; gap: 10px; margin-bottom: 12px; }
@@ -76,19 +76,25 @@
     .veg-Toggle { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--ivory-muted); font-size: 0.78rem; font-weight: 600; cursor: pointer; }
     .veg-Toggle.active { border-color: var(--veg-green); background: rgba(46, 158, 91, 0.15); color: var(--ivory); }
 
-    /* Zomato-Style Scrollable Categories */
-    .category-strip { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+    /* Category Strip with Gradient Fade Trick */
+    .category-strip-wrapper { position: relative; width: 100%; }
+    .category-strip-wrapper::after {
+      content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 45px;
+      background: linear-gradient(to right, rgba(15, 21, 19, 0), rgba(15, 21, 19, 0.98));
+      pointer-events: none;
+    }
+    .category-strip { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; padding-right: 20px; }
     .category-strip::-webkit-scrollbar { display: none; }
     .cat-pill { 
       padding: 8px 16px; border-radius: 99px; background: var(--bg-surface); 
       border: 1px solid var(--border-subtle); color: var(--ivory-muted); 
       font-size: 0.88rem; font-weight: 700; white-space: nowrap; cursor: pointer; 
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
     }
     .cat-pill.active { background: var(--gold); color: #101614; border-color: var(--gold); transform: scale(1.05); }
 
-    .menu-container { padding: 12px 16px 70px; max-width: 820px; margin: 0 auto; }
-    .menu-section { scroll-margin-top: 140px; } /* Ensures the title isn't hidden under the sticky header when jumping */
+    .menu-container { padding: 12px 16px 40px; max-width: 820px; margin: 0 auto; }
+    .menu-section { scroll-margin-top: 140px; } 
     
     .section-header { margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle); }
     .section-title { font-family: var(--font-serif); font-size: 1.55rem; font-weight: 700; color: var(--ivory); }
@@ -121,20 +127,46 @@
     .placeholder-art { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--ivory-dim); }
     .placeholder-art svg { width: 24px; height: 24px; }
 
-    .site-footer { background: var(--bg-surface); border-top: 1px solid var(--border-subtle); padding: 32px 16px; text-align: center; }
+    /* Floating Menu Button (Zomato / Swiggy style) */
+    .fab-menu {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(22, 32, 29, 0.95); backdrop-filter: blur(10px);
+      border: 1px solid var(--gold-border); color: var(--gold); padding: 12px 26px;
+      border-radius: 99px; font-family: var(--font-sans); font-size: 0.95rem; font-weight: 700;
+      display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      z-index: 90; cursor: pointer; transition: transform 0.2s;
+    }
+    .fab-menu:active { transform: translateX(-50%) scale(0.95); }
+    .fab-menu svg { width: 18px; height: 18px; }
+
+    .site-footer { background: var(--bg-surface); border-top: 1px solid var(--border-subtle); padding: 32px 16px 100px; text-align: center; }
     .footer-logo { font-family: var(--font-serif); font-size: 1.4rem; color: var(--gold); margin-bottom: 10px; }
     .footer-services { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
     .service-tag { padding: 4px 10px; border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle); font-size: 0.74rem; color: var(--ivory-muted); }
     .footer-text { font-size: 0.84rem; color: var(--ivory-muted); max-width: 460px; margin: 0 auto 6px; }
 
+    /* Modals (Dish Detail & Menu Bottom Sheet) */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
     .modal-backdrop.open { display: flex; }
     .modal-sheet { background: var(--bg-card); border-top: 1px solid var(--gold-border); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; position: relative; }
+    
     .modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.65); color: var(--ivory); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
     .modal-image-wrap { width: 100%; height: 220px; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .modal-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .modal-body { padding: 20px; }
     .modal-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; margin: 6px 0; }
+
+    /* Bottom Sheet List Styles */
+    .sheet-cat-btn {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; padding: 14px 20px; background: transparent;
+      color: var(--ivory); font-family: var(--font-sans); font-size: 1.05rem;
+      font-weight: 600; cursor: pointer; transition: background 0.15s;
+    }
+    .sheet-cat-btn:active { background: var(--bg-elevated); }
+    .sheet-cat-btn.active { color: var(--gold); background: var(--gold-soft); }
+    .sheet-cat-count { font-size: 0.85rem; color: var(--ivory-dim); font-weight: 500; }
+    .sheet-cat-btn.active .sheet-cat-count { color: var(--gold); }
   </style>
 </head>
 <body>
@@ -180,16 +212,38 @@
         </div>
         <button type="button" id="vegFilterBtn" class="veg-Toggle"><span class="diet-icon"></span> Veg</button>
       </div>
-      <!-- Category Strip Acts as Anchor Jump Links -->
-      <div class="category-strip" id="categoryStrip"></div>
+      
+      <!-- Category Strip with Wrapper for Gradient Fade -->
+      <div class="category-strip-wrapper">
+        <div class="category-strip" id="categoryStrip"></div>
+      </div>
     </div>
   </div>
 
-  <!-- Entire Menu is Rendered Here -->
   <main class="menu-container" id="menuContainer">
     <div style="text-align:center; padding:40px; color:var(--gold);">Loading Menu...</div>
   </main>
 
+  <!-- The Floating Menu Button -->
+  <button class="fab-menu" id="fabMenuBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    MENU
+  </button>
+
+  <!-- The Menu Bottom Sheet -->
+  <div class="modal-backdrop" id="menuSheetModal">
+    <div class="modal-sheet" style="max-height: 75vh; display: flex; flex-direction: column;">
+      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-card); z-index: 2; border-radius: 20px 20px 0 0;">
+        <h2 style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--gold);">Categories</h2>
+        <button type="button" class="modal-close" id="menuSheetCloseBtn" style="position: static;">✕</button>
+      </div>
+      <div style="overflow-y: auto; padding: 10px 0;" id="sheetMenuList">
+        <!-- Javascript Populates This -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Dish Detail Modal -->
   <div class="modal-backdrop" id="itemModal">
     <div class="modal-sheet">
       <button type="button" class="modal-close" id="modalCloseBtn">✕</button>
@@ -281,26 +335,55 @@
         document.getElementById('footerServices').innerHTML = servicesList.map((s) => `<span class="service-tag">✓ ${escapeHtml(s)}</span>`).join('');
       }
 
+      function jumpToCat(catId) {
+        // 1. Clear search if active, so the requested category is guaranteed to be on screen
+        if (state.searchQuery || state.vegOnly) {
+          state.searchQuery = '';
+          state.vegOnly = false;
+          document.getElementById('searchInput').value = '';
+          document.getElementById('vegFilterBtn').classList.remove('active');
+          renderMenu();
+        }
+
+        // 2. Allow DOM to breathe, then glide to the target
+        setTimeout(() => {
+          const targetEl = document.getElementById(`cat-section-${catId}`);
+          if (targetEl) {
+            const y = targetEl.getBoundingClientRect().top + window.scrollY - 140;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+        }, 50);
+
+        document.getElementById('menuSheetModal').classList.remove('open');
+      }
+
       function renderCategories() {
         const strip = document.getElementById('categoryStrip');
+        const sheetList = document.getElementById('sheetMenuList');
         strip.innerHTML = '';
+        sheetList.innerHTML = '';
         
-        state.categories.forEach((cat, idx) => {
-          // Make the first pill active by default
-          strip.innerHTML += `<button class="cat-pill ${idx === 0 ? 'active' : ''}" data-cat-target="${cat.id}">${escapeHtml(cat.name)}</button>`;
+        state.categories.forEach((cat) => {
+          const catItemsCount = state.items.filter(i => String(i.category_id) === String(cat.id)).length;
+          if (catItemsCount === 0) return; // Hide empty categories
+
+          // Top Ribbon Pill
+          strip.innerHTML += `<button class="cat-pill" data-cat-target="${cat.id}">${escapeHtml(cat.name)}</button>`;
+          
+          // Bottom Sheet Row (with item count)
+          sheetList.innerHTML += `
+            <button class="sheet-cat-btn" data-cat-target="${cat.id}">
+              <span>${escapeHtml(cat.name)}</span>
+              <span class="sheet-cat-count">${catItemsCount}</span>
+            </button>
+          `;
         });
 
-        // Smooth Scroll "Jump-To" Logic
         strip.querySelectorAll('.cat-pill').forEach((btn) => {
-          btn.addEventListener('click', (e) => {
-            const targetId = `cat-section-${e.target.dataset.catTarget}`;
-            const targetEl = document.getElementById(targetId);
-            if (targetEl) {
-              // Offset scroll by 140px so it doesn't hide behind the sticky header
-              const y = targetEl.getBoundingClientRect().top + window.scrollY - 140;
-              window.scrollTo({ top: y, behavior: 'smooth' });
-            }
-          });
+          btn.addEventListener('click', (e) => jumpToCat(e.target.dataset.catTarget));
+        });
+        sheetList.querySelectorAll('.sheet-cat-btn').forEach((btn) => {
+          btn.addEventListener('click', (e) => jumpToCat(e.currentTarget.dataset.catTarget));
         });
       }
 
@@ -336,16 +419,24 @@
       function setupScrollSpy() {
         if (scrollObserver) scrollObserver.disconnect();
         
-        // Highlights the category ribbon based on scroll position
         scrollObserver = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
+              const catId = entry.target.dataset.categoryId;
+              
+              // Sync Top Ribbon
               document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
-              const activeBtn = document.querySelector(`.cat-pill[data-cat-target="${entry.target.dataset.categoryId}"]`);
-              if (activeBtn) {
-                activeBtn.classList.add('active');
-                // Automatically scroll the ribbon left/right to keep the active category visible
-                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+              const activePill = document.querySelector(`.cat-pill[data-cat-target="${catId}"]`);
+              if (activePill) {
+                activePill.classList.add('active');
+                activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+              }
+
+              // Sync Bottom Menu Sheet
+              document.querySelectorAll('.sheet-cat-btn').forEach(b => b.classList.remove('active'));
+              const activeSheetBtn = document.querySelector(`.sheet-cat-btn[data-cat-target="${catId}"]`);
+              if (activeSheetBtn) {
+                activeSheetBtn.classList.add('active');
               }
             }
           });
@@ -370,7 +461,17 @@
           return;
         }
 
-        // Always render ALL categories and items (like Zomato), unless searching!
+        if (!q) {
+          const feats = filtered.filter((i) => (i.is_featured || i.custom_badge) && i.is_available);
+          if (feats.length > 0) {
+            const sec = document.createElement('div');
+            sec.className = 'menu-section';
+            sec.innerHTML = `<div class="section-header"><h2 class="section-title"><span style="color:var(--gold);">★</span> Specials & Bestsellers</h2></div><div class="food-grid"></div>`;
+            feats.forEach((i) => sec.querySelector('.food-grid').appendChild(createFoodCard(i)));
+            container.appendChild(sec);
+          }
+        }
+
         state.categories.forEach((cat) => {
           const catItems = filtered.filter((i) => String(i.category_id) === String(cat.id));
           if (catItems.length === 0) return;
@@ -378,7 +479,7 @@
           const sec = document.createElement('div');
           sec.id = `cat-section-${cat.id}`;
           sec.className = 'menu-section';
-          sec.dataset.categoryId = cat.id; // For the scroll spy
+          sec.dataset.categoryId = cat.id; 
           sec.innerHTML = `
             <div class="section-header">
               <h2 class="section-title">${escapeHtml(cat.name)}</h2>
@@ -391,7 +492,6 @@
           container.appendChild(sec);
         });
 
-        // Initialize Auto-Highlighting when scrolling
         setupScrollSpy();
       }
 
@@ -414,8 +514,14 @@
         modal.classList.add('open');
       }
 
+      // FAB and Modal Listeners
+      document.getElementById('fabMenuBtn').addEventListener('click', () => document.getElementById('menuSheetModal').classList.add('open'));
+      document.getElementById('menuSheetCloseBtn').addEventListener('click', () => document.getElementById('menuSheetModal').classList.remove('open'));
+      document.getElementById('menuSheetModal').addEventListener('click', (e) => { if (e.target.id === 'menuSheetModal') e.target.classList.remove('open'); });
+
       document.getElementById('modalCloseBtn').addEventListener('click', () => document.getElementById('itemModal').classList.remove('open'));
       document.getElementById('itemModal').addEventListener('click', (e) => { if (e.target.id === 'itemModal') e.target.classList.remove('open'); });
+      
       document.getElementById('searchInput').addEventListener('input', (e) => { state.searchQuery = e.target.value; renderMenu(); });
       document.getElementById('vegFilterBtn').addEventListener('click', (e) => { state.vegOnly = !state.vegOnly; e.currentTarget.classList.toggle('active', state.vegOnly); renderMenu(); });
 
