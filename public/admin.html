@@ -272,6 +272,30 @@
   </div>
 
   <!-- Modals -->
+
+  <!-- Owner Recovery Modal -->
+  <div class="editor-backdrop" id="recoveryModal">
+    <div class="editor-modal" style="max-width:520px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2 style="font-family:var(--font-serif); font-size:1.6rem; color:var(--gold);">Account Recovery Guide</h2>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('recoveryModal').classList.remove('open')">✕</button>
+      </div>
+      <div style="color:var(--ivory); font-size:0.92rem; line-height:1.6;">
+        <p style="margin-bottom:14px;"><strong>For Staff:</strong> Please contact the restaurant owner. They can easily revoke your old email and authorize a new one directly from their dashboard.</p>
+        <p style="margin-bottom:12px;"><strong>For the Primary Owner:</strong> If you lose access to your primary email, you are locked out of Firebase password resets. To regain access, you must manually force a new email into the database:</p>
+        <ol style="margin-left:22px; color:var(--ivory-muted); margin-bottom:20px;">
+          <li style="margin-bottom:6px;">Log into your <strong>Cloudflare Dashboard</strong>.</li>
+          <li style="margin-bottom:6px;">Navigate to <strong>D1 SQL Database</strong> &rarr; <strong>anna-menu-db</strong> &rarr; <strong>Console</strong>.</li>
+          <li style="margin-bottom:6px;">Copy, paste, and execute this exact SQL command:<br>
+            <code style="background:var(--bg-input); padding:6px 10px; border-radius:6px; color:var(--gold); display:block; margin-top:8px; font-size:0.8rem; border:1px solid var(--border);">INSERT INTO authorized_admins (email, added_at) VALUES ('your_new_email@gmail.com', datetime('now'));</code>
+          </li>
+          <li style="margin-top:8px;">Go to your <strong>Firebase Console</strong> &rarr; Authentication &rarr; Add User, and create a password for that same new email address.</li>
+        </ol>
+        <button type="button" class="btn btn-primary" style="width:100%;" onclick="document.getElementById('recoveryModal').classList.remove('open')">I Understand</button>
+      </div>
+    </div>
+  </div>
+
   <div class="editor-backdrop" id="itemEditorModal">
     <div class="editor-modal">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -394,7 +418,7 @@
 
     on('lostAccessBtn', 'click', (e) => {
       e.preventDefault();
-      alert('If you have lost access to your email account entirely, please contact the main restaurant owner. They can safely revoke your old account and create a new login for you from their "Settings & Team" tab.');
+      document.getElementById('recoveryModal').classList.add('open');
     });
 
     on('loginForm', 'submit', async (e) => {
@@ -449,7 +473,7 @@
     on('bulkStockForm', 'submit', async (e) => {
       e.preventDefault();
       const catId = document.getElementById('bulkStockCat').value;
-      const avail = document.getElementById('bulkStockStatus').value;
+      const avail = Number(document.getElementById('bulkStockStatus').value); // Strict number parsing
       try {
         await apiFetch('/api/bulk', { method: 'POST', body: JSON.stringify({ action: 'stock', category_id: catId, is_available: avail }) });
         showToast('✓ Bulk stock update applied!');
