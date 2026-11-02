@@ -15,7 +15,6 @@ function json(data, status = 200, extraHeaders = {}) {
 }
 
 // 1. Crash-Proof Database Initialization
-// Instead of a strict batch, we run these one by one so a single conflict doesn't crash the server.
 async function ensureDatabase(db) {
   if (dbInitialized) return;
   
@@ -33,13 +32,136 @@ async function ensureDatabase(db) {
   ];
 
   for (const query of setupQueries) {
-    try {
-      await db.prepare(query).run();
-    } catch (e) {
-      // Gracefully ignore columns that already exist
-    }
+    try { await db.prepare(query).run(); } catch (e) {} 
   }
+}
+
+// 2. AUTOMATIC MENU SEEDER (Bypasses the D1 Console entirely!)
+async function autoSeedMenu(db) {
+  // Check if categories already exist
+  const count = await db.prepare(`SELECT COUNT(*) as c FROM categories`).first();
+  if (count && count.c > 0) {
+    dbInitialized = true;
+    return; // Menu is already populated!
+  }
+
+  // Exact Menu Data from your Photos
+  const MENU_DATA = [
+    { cat: 'Coffee', items: [['South Indian Filter Coffee', 5000, 5800, 'Authentic, strong, and aromatic traditional filter coffee.']] },
+    { cat: 'Idli Vada', items: [
+      ['Idli Sambar (2pcs)', 7000, 8100, 'Soft steamed rice cakes served with authentic hot sambar. Pure ingredients.'],
+      ['Vada Sambar (2pcs)', 7000, 8100, 'Crispy deep-fried lentil donuts served with hot sambar.'],
+      ['Fried Idli', 12000, 13800, 'Golden fried idli cubes tossed in authentic South Indian spices.'],
+      ['Podi Idli', 10000, 11500, 'Steamed idlis coated with flavorful homemade gunpowder (podi) and desi ghee.'],
+      ['1 Idli with Samber', 5000, 5800, 'Single soft steamed rice cake served with fresh sambar.'],
+      ['1 Vada with Samber', 5000, 5800, 'Single crispy lentil donut served with fresh sambar.'],
+      ['1 Idli + 1 Vada with Samber', 7000, 8100, 'The perfect combination of one soft idli and one crispy vada.']
+    ]},
+    { cat: 'Anna Dosa', items: [
+      ['Masala Dosa', 10000, 11500, 'Crisp golden dosa folded over a savory spiced potato filling.'],
+      ['Plain Dosa', 8000, 9200, 'Classic thin and crispy rice crepe served with authentic chutneys.'],
+      ['Mysore Plain Dosa', 12000, 13800, 'Crispy crepe spread with a spicy, tangy red garlic chutney.'],
+      ['Variety Dosa (3pcs)', 16000, 18400, 'A delicious platter of three distinct miniature dosas.'],
+      ['Paneer Dosa', 13000, 15000, 'Crispy dosa generously stuffed with fresh, premium quality grated paneer.'],
+      ['Onion Plain Dosa', 10000, 11500, 'Crispy dosa cooked with finely chopped onions for an extra crunch.'],
+      ['Onion Masala Dosa', 11000, 12700, 'Crispy dosa loaded with roasted onions and our signature potato masala.'],
+      ['Onion Paneer Dosa', 14000, 16100, 'A rich combination of fresh paneer and roasted onions inside a crispy dosa.'],
+      ['Paneer Mix Dosa', 12000, 13800, 'Special dosa filled with a flavorful mix of fresh paneer and pure ingredients.'],
+      ['Mysore Paneer Dosa', 16000, 18400, 'Spicy Mysore chutney base loaded with premium grated paneer.'],
+      ['Ghee Rost Plain Dosa', 11000, 12700, 'Ultra-crispy thin crepe roasted perfectly in rich, pure desi ghee.'],
+      ['Ghee Rost Masala Dosa', 13000, 15000, 'Crispy dosa roasted in pure desi ghee, filled with our signature potato masala.'],
+      ['Ghee Rost Paneer', 16000, 18400, 'Rich, pure desi ghee roasted dosa heavily stuffed with fresh paneer.'],
+      ['Set Dosa (3pcs)', 11000, 12700, 'Three soft, spongy, and fluffy dosas served with fresh coconut chutney and sambar.']
+    ]},
+    { cat: 'Family Dosa', items: [
+      ['Family Masala Dosa', 19000, 21900, 'An extra-large, crispy dosa filled with authentic potato masala.'],
+      ['Family Plain Dosa', 14000, 16100, 'Extra-large classic crispy plain dosa.'],
+      ['Family Onion Masala Dosa', 21000, 24200, 'Giant crispy dosa layered with roasted onions and spiced potato masala.'],
+      ['Family Onion Plain Dosa', 19000, 21900, 'Giant crispy dosa cooked with fresh onions.'],
+      ['Family Paneer Onion Dosa', 26000, 29900, 'Our largest premium dosa heavily stuffed with fresh paneer and onions.'],
+      ['Family Mysore Masala Dosa', 24000, 27600, 'Extra-large spicy Mysore dosa with rich potato masala.'],
+      ['Family Paneer Dosa', 25000, 28800, 'Giant dosa loaded with premium quality grated paneer.'],
+      ['Family Paneer Mix', 23000, 26500, 'Extra-large dosa packed with our special paneer and vegetable mix.']
+    ]},
+    { cat: 'Rawa Dosa', items: [
+      ['Rawa Plain Dosa', 12000, 13800, 'Incredibly crisp and porous semolina crepe, flavored with cumin and green chillies.'],
+      ['Rawa Masala Dosa', 15000, 17300, 'Crispy semolina dosa folded over our flavorful signature potato masala.'],
+      ['Rawa Paneer Mix Dosa', 19000, 21900, 'Crispy rawa dosa stuffed with fresh paneer and mixed vegetables.'],
+      ['Rawa Onion Plain Dosa', 14000, 16100, 'Crispy semolina crepe cooked with finely diced onions.'],
+      ['Rawa Onion Masala Dosa', 16000, 18400, 'Crispy rawa dosa with roasted onions and spiced potato masala.'],
+      ['Rawa Onion Paneer Dosa', 21000, 24200, 'Premium crispy semolina dosa stuffed with fresh paneer and onions.'],
+      ['Rawa Paneer Dosa', 20000, 23000, 'Crispy rawa dosa loaded with high-quality grated paneer.']
+    ]},
+    { cat: 'Special Dosa', items: [
+      ['Chilli Garlic Masala', 13000, 15000, 'Spicy and tangy dosa roasted with a special chilli garlic paste.'],
+      ['Mysore Masala', 14000, 16100, 'Crispy crepe layered with spicy red chutney and potato masala.'],
+      ['Anna Chilli Paneer Dosa', 17000, 19600, 'Our signature creation loaded with spicy, wok-tossed chilli paneer filling.'],
+      ['Anna Special Dosa', 18000, 20700, 'Chef''s special preparation using premium pure ingredients and secret spices.'],
+      ['Pizza Dosa', 20000, 23000, 'A delicious fusion of crispy dosa topped with pizza sauce, veggies, and melted cheese.'],
+      ['Noodle Dosa', 16000, 18400, 'An Indo-Chinese fusion dosa stuffed with flavorful hakka noodles.']
+    ]},
+    { cat: 'Uttapam', items: [
+      ['Plain Uttapam', 8000, 9200, 'Thick, soft, and savory South Indian griddle pancake.'],
+      ['Onion Uttapam', 12000, 13800, 'Soft savory pancake generously topped with roasted onions.'],
+      ['Onion Tomato Uttapam', 14000, 16100, 'Classic uttapam loaded with fresh diced tomatoes and onions.'],
+      ['Onion Paneer Uttapam', 16000, 18400, 'Premium uttapam topped with fresh onions and grated paneer.'],
+      ['Veg. Mix Uttapam', 17000, 19600, 'Thick, soft pancake loaded with a nutritious mix of fresh vegetables.']
+    ]},
+    { cat: 'Chinese', items: [
+      ['Veg. Chowmein', 9000, 10400, 'Classic wok-tossed noodles with fresh vegetables.'],
+      ['Paneer Chowmein', 13000, 15000, 'Delicious stir-fried noodles tossed with fresh paneer cubes.'],
+      ['Chilli Garlic Chowmein', 11000, 12700, 'Spicy and aromatic noodles cooked with a punch of chilli and garlic.'],
+      ['Chilli Garlic Paneer Chowmein', 14000, 16100, 'Spicy chilli garlic noodles mixed with fresh paneer chunks.'],
+      ['Singapuri Paneer Chowmein', 15000, 17300, 'Tangy and slightly spicy Singapore-style noodles with paneer.'],
+      ['Veg. Hakka Noodle', 13000, 15000, 'Authentic street-style hakka noodles tossed on a high flame.'],
+      ['Anna Spl. Chowmein', 18000, 20700, 'Our house special loaded noodles prepared with pure ingredients.']
+    ]},
+    { cat: 'Fried Rice', items: [
+      ['Veg. Fried Rice', 11000, 12700, 'Aromatic basmati rice wok-tossed with fresh vegetables.'],
+      ['Mix Fried Rice', 14000, 16100, 'Flavorful fried rice loaded with an assortment of vegetables.'],
+      ['Garlic Fried Rice', 12000, 13800, 'Aromatic fried rice with a strong, delicious garlic flavor.'],
+      ['Paneer Singapuri Rice', 15000, 17300, 'Tangy Singapore-style fried rice loaded with fresh paneer.'],
+      ['Paneer Fried Rice', 14000, 16100, 'Classic vegetable fried rice generously topped with fresh paneer.']
+    ]},
+    { cat: 'Snacks', items: [
+      ['Finger Chips', 7000, 8100, 'Crispy, golden-fried potato fries.'],
+      ['Chilli Potato', 11000, 12700, 'Crispy potato fingers tossed in a spicy Chinese sauce.'],
+      ['Honey Chilli Potato', 13000, 15000, 'Crispy potatoes glazed in a sweet and spicy honey chilli sauce.'],
+      ['Chilli Paneer (Dry/Gravy)', 17000, 19600, 'Fresh paneer cubes wok-tossed with bell peppers in a spicy soy glaze.'],
+      ['Manchurian', 12000, 13800, 'Crispy vegetable dumplings tossed in a rich, dark garlic soy sauce.'],
+      ['Veg. Maggi', 8000, 9200, 'Everyone''s favorite instant noodles cooked with fresh vegetables.'],
+      ['Paneer Maggi', 11000, 12700, 'Comforting bowl of Maggi loaded with fresh paneer cubes.']
+    ]},
+    { cat: 'Drink', items: [
+      ['Ice Cream', 0, 0, 'Available at MRP.'],
+      ['Hot Coffee', 5000, 5800, 'Classic hot coffee brewed to perfection.'],
+      ['Cold Drinks (250ml)', 2000, 2000, 'Chilled refreshing bottled beverages.'],
+      ['Cold Drinks (750ml)', 5000, 5000, 'Large chilled refreshing bottled beverages.']
+    ]},
+    { cat: 'Pre-Booking (1 Day Before)', items: [
+      ['South Indian Parotta (2pcs)', 6000, 6900, 'Flaky, layered South Indian flatbread. Pre-booking required.'],
+      ['South Indian Dum Biryani', 10000, 11500, 'Authentic aromatic South Indian Biryani. Pre-booking required.']
+    ]}
+  ];
+
+  // 1. Insert Categories
+  const catStmts = MENU_DATA.map((c, i) => 
+    db.prepare(`INSERT INTO categories (id, name, display_order) VALUES (?, ?, ?)`).bind(i + 1, c.cat, i + 1)
+  );
+  await db.batch(catStmts);
+
+  // 2. Insert Items
+  let itemStmts = [];
+  MENU_DATA.forEach((catObj, catIdx) => {
+    catObj.items.forEach(item => {
+      itemStmts.push(
+        db.prepare(`INSERT INTO menu_items (category_id, name, price_paise, original_price_paise, description, is_vegetarian) VALUES (?, ?, ?, ?, ?, 1)`)
+          .bind(catIdx + 1, item[0], item[1], item[2], item[3])
+      );
+    });
+  });
   
+  await db.batch(itemStmts);
   dbInitialized = true;
 }
 
@@ -99,8 +221,6 @@ async function cleanupOrphanedR2Image(env, imageKey) {
   } catch {}
 }
 
-// 2. Global Error Catcher
-// If ANYTHING fails, it will now return the exact error reason instead of a blank 500 error
 export async function onRequest(context) {
   try {
     const { request, env } = context;
@@ -108,9 +228,8 @@ export async function onRequest(context) {
     const path = url.pathname;
     const method = request.method.toUpperCase();
 
-    // Check if bindings exist
-    if (!env.DB) throw new Error("Cloudflare D1 Database binding is missing. Please check Settings -> Bindings.");
-    if (!env.MEDIA_BUCKET) throw new Error("Cloudflare R2 Bucket binding is missing. Please check Settings -> Bindings.");
+    if (!env.DB) throw new Error("Cloudflare D1 Database binding is missing.");
+    if (!env.MEDIA_BUCKET) throw new Error("Cloudflare R2 Bucket binding is missing.");
 
     if (path.startsWith('/media/')) {
       const key = path.slice('/media/'.length).trim();
@@ -129,6 +248,9 @@ export async function onRequest(context) {
 
     if (path.startsWith('/api/')) {
       await ensureDatabase(env.DB);
+      
+      // AUTO SEED INJECTION HERE!
+      await autoSeedMenu(env.DB);
 
       if (path === '/api/menu' && method === 'GET') {
         const [sRes, cRes, iRes] = await env.DB.batch([
@@ -317,7 +439,6 @@ export async function onRequest(context) {
 
     return context.next();
   } catch (error) {
-    // If the database crashes, this will catch it and print the exact reason to your browser!
     return new Response(JSON.stringify({ error: error.message, stack: error.stack }), { 
       status: 500, 
       headers: { 'Content-Type': 'application/json' }
