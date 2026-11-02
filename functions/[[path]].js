@@ -131,10 +131,12 @@ export async function onRequest(context) {
         }
         
         if (b.action === 'stock') {
+          // Explicitly strictly format the boolean number to prevent string coercion issues
+          const isAvail = Number(b.is_available) === 1 ? 1 : 0;
           if (b.category_id === 'all') {
-            await env.DB.prepare(`UPDATE menu_items SET is_available = ?`).bind(b.is_available ? 1 : 0).run();
+            await env.DB.prepare(`UPDATE menu_items SET is_available = ?`).bind(isAvail).run();
           } else {
-            await env.DB.prepare(`UPDATE menu_items SET is_available = ? WHERE category_id = ?`).bind(b.is_available ? 1 : 0, Number(b.category_id)).run();
+            await env.DB.prepare(`UPDATE menu_items SET is_available = ? WHERE category_id = ?`).bind(isAvail, Number(b.category_id)).run();
           }
           return json({ ok: true });
         }
@@ -142,7 +144,6 @@ export async function onRequest(context) {
         if (b.action === 'start_sale') {
           const disc = Number(b.discount_percent);
           const badge = String(b.badge || '');
-          // SQL trick: If item is already on sale, it uses the 'original_price_paise' as the base to calculate the new discount, preventing double-discounting bugs!
           const q = `
             UPDATE menu_items 
             SET original_price_paise = CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END,
@@ -159,7 +160,6 @@ export async function onRequest(context) {
         }
 
         if (b.action === 'end_sale') {
-          // SQL trick: Restores the true price, wipes the original_price column, wipes the badge.
           const q = `
             UPDATE menu_items 
             SET price_paise = CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END,
