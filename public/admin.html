@@ -70,9 +70,14 @@
 
     .settings-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
     
-    .help-card { background: rgba(207, 168, 88, 0.05); border: 1px solid var(--gold-border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
-    .help-card h3 { color: var(--gold); margin-bottom: 8px; font-family: var(--font-serif); font-size: 1.4rem; display: flex; align-items: center; gap: 8px; }
-    .help-card p { font-size: 0.88rem; color: var(--ivory-muted); line-height: 1.6; margin-bottom: 8px; }
+    /* Guide Styles */
+    .help-section { display: flex; flex-direction: column; gap: 16px; }
+    .help-card { background: rgba(207, 168, 88, 0.05); border: 1px solid var(--gold-border); border-radius: 12px; padding: 18px; }
+    .help-card h3 { color: var(--gold); margin-bottom: 12px; font-family: var(--font-serif); font-size: 1.4rem; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--gold-border); padding-bottom: 8px;}
+    .help-step { margin-bottom: 12px; padding-left: 20px; position: relative; }
+    .help-step::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-weight: bold; }
+    .help-step strong { color: var(--ivory); }
+    .help-step p { font-size: 0.88rem; color: var(--ivory-muted); line-height: 1.5; margin: 4px 0 0 0; }
 
     @media (min-width: 860px) { .settings-grid { grid-template-columns: 1.2fr 0.8fr; align-items: start; } }
 
@@ -80,7 +85,6 @@
     @media (max-width: 800px) {
       .dashboard-shell.active { flex-direction: column; padding-bottom: 80px; }
       
-      /* Sleek Bottom App Navigation */
       .sidebar { 
         width: 100%; position: fixed; bottom: 0; left: 0; right: 0; flex-direction: row; 
         overflow-x: auto; padding: 8px 12px; z-index: 1000; border-top: 1px solid var(--border); 
@@ -89,7 +93,6 @@
       .sidebar::-webkit-scrollbar { display: none; }
       .sidebar-brand { display: none; }
       
-      /* Tabs become tap-friendly pills */
       .nav-btn { 
         white-space: nowrap; justify-content: center; padding: 10px 14px; 
         font-size: 0.82rem; width: auto; flex: 0 0 auto; border-radius: 12px; flex-direction: column; gap: 4px;
@@ -100,12 +103,9 @@
       .page-header { margin-bottom: 16px; }
       .page-title { font-size: 1.6rem; }
       
-      /* Stack Admin Rows on Mobile for easier reading/tapping */
       .admin-row { flex-direction: column; align-items: stretch; gap: 12px; padding: 16px; }
       .row-actions { justify-content: space-between; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px; }
-      .row-thumb { width: 100%; height: 140px; border-radius: 10px; }
-      .admin-row > div:first-child { flex-direction: column; align-items: flex-start; }
-      .admin-row img.row-thumb { display: none; /* Hide image on mobile admin to save space, rely on text */ }
+      .admin-row > div:first-child { flex-direction: row; align-items: center; } /* Ensure image and text are side-by-side on mobile */
     }
   </style>
 </head>
@@ -280,36 +280,75 @@
         </div>
       </section>
 
-      <!-- TAB 6: Help & Guide -->
+      <!-- TAB 6: Help -->
       <section class="tab-pane" id="helpTab">
-        <div class="page-header"><h1 class="page-title">❔ User Guide & Help</h1></div>
+        <div class="page-header"><h1 class="page-title">❔ Dashboard Guide</h1></div>
         
-        <div class="help-card">
-          <h3>📦 Auto-Reset Stock (Sold Out)</h3>
-          <p><strong>Never forget to turn items back on!</strong> Whenever you mark a dish as "Sold Out" (either using the toggle switch in the Dishes tab, or using the Bulk Manager), the system records the time.</p>
-          <p>At midnight (Indian Standard Time), the system automatically resets all Sold Out dishes back to "Available". When you wake up the next morning, your menu is completely ready for business.</p>
-        </div>
+        <div class="help-section">
+          
+          <div class="help-card">
+            <h3>Dishes & Menu</h3>
+            <div class="help-step">
+              <strong>Adding a Dish</strong>
+              <p>Navigate to "Dishes" and click "+ Add Dish". Fill out the required details (Name, Price, Category).</p>
+            </div>
+            <div class="help-step">
+              <strong>Managing Stock</strong>
+              <p>Toggle the "Available / Sold Out" switch next to any dish. Items marked as "Sold Out" will automatically reset to "Available" at midnight (IST).</p>
+            </div>
+            <div class="help-step">
+              <strong>Bestsellers</strong>
+              <p>Check the "★ Bestseller" box when adding/editing a dish. It will get a special badge and appear in the "Bestsellers" category at the top of the customer menu.</p>
+            </div>
+             <div class="help-step">
+              <strong>Adding Tags/Subtext</strong>
+              <p>Use the "Subtext / Tag" field to add extra information below the description, like "↳ + ₹40 Extra for Desi Ghee".</p>
+            </div>
+          </div>
 
-        <div class="help-card">
-          <h3>⚡ Happy Hours & Sales</h3>
-          <p>The <strong>Sales & Bulk Tab</strong> allows you to run discounts across your entire menu or specific categories.</p>
-          <p>When you start a sale, the system calculates the math for you. It automatically crosses out the old price, displays the new slashed price, and adds your custom Badge (like "20% OFF" or "HAPPY HOUR") to every dish.</p>
-          <p>When the sale is over, simply click "End Active Sales" to instantly restore all original prices and remove the badges.</p>
-        </div>
+          <div class="help-card">
+            <h3>Categories</h3>
+            <div class="help-step">
+              <strong>Managing Categories</strong>
+              <p>Go to the "Categories" tab. You can add new categories or edit existing ones. Empty categories will not be shown to customers.</p>
+            </div>
+          </div>
 
-        <div class="help-card">
-          <h3>🏷️ Subtext / Tags vs. Badges</h3>
-          <p><strong>Subtext / Tag:</strong> This sits right below the dish description on the customer menu. Use this for add-on instructions like <em>"↳ + ₹40 Extra for Desi Ghee"</em> or <em>"↳ Requires 1 Day Pre-booking"</em>.</p>
-          <p><strong>Deal Badge:</strong> This is a highly visible red or gold box that sits above the dish name. Use this for promotional alerts like <em>"NEW"</em>, <em>"SPICY"</em>, or <em>"20% OFF"</em>.</p>
-        </div>
+          <div class="help-card">
+            <h3>Sales & Bulk Manager</h3>
+            <div class="help-step">
+              <strong>Running a Sale</strong>
+              <p>Select a category (or 'All Categories'), enter a discount percentage (e.g., 10), and a badge text (e.g., "10% OFF"). The system calculates the discounted price, strikes out the old price, and adds the badge automatically.</p>
+            </div>
+            <div class="help-step">
+              <strong>Ending a Sale</strong>
+              <p>Use the "End Active Sales" tool. It removes the badge and restores the original pricing instantly.</p>
+            </div>
+            <div class="help-step">
+              <strong>Find & Replace Pricing</strong>
+              <p>Quickly update prices in bulk. Enter the old price (e.g., 70) and the new price (e.g., 80) to update all matching items at once.</p>
+            </div>
+            <div class="help-step">
+              <strong>Bulk Stock Update</strong>
+              <p>Quickly mark an entire category (or all items) as "Available" or "Sold Out".</p>
+            </div>
+          </div>
 
-        <div class="help-card">
-          <h3>★ Bestsellers Category</h3>
-          <p>When you check the "★ Bestseller" box inside a dish, two things happen:</p>
-          <p>1. The dish gets a gold Bestseller badge.</p>
-          <p>2. The dish is automatically copied to the very top of the customer menu into a permanent "★ Bestsellers" category, so it's the first thing customers see!</p>
+          <div class="help-card">
+            <h3>Settings & Team</h3>
+            <div class="help-step">
+              <strong>Global Banner</strong>
+              <p>Add a message in the "Global Banner" field to display an announcement at the very top of the customer menu.</p>
+            </div>
+            <div class="help-step">
+              <strong>Managing Staff</strong>
+              <p>Authorize new admin accounts by entering an email and password. They can use these credentials to log into this dashboard. You can revoke access at any time.</p>
+            </div>
+          </div>
+
         </div>
       </section>
+
     </main>
   </div>
 
@@ -479,7 +518,7 @@
       filtered.forEach((item) => {
         const row = document.createElement('div'); row.className = 'admin-row';
         let priceHtml = `₹${(item.price_paise / 100).toFixed(0)}`; if (item.original_price_paise > item.price_paise) { priceHtml += ` <span style="text-decoration:line-through; color:var(--ivory-dim); font-size:0.78rem; margin-left:4px;">₹${(item.original_price_paise / 100).toFixed(0)}</span>`; }
-        row.innerHTML = `<div style="display:flex; gap:12px; align-items:center; flex:1; min-width:220px;">${item.image_url ? `<img src="${escapeHtml(item.image_url)}" class="row-thumb" />` : `<div class="row-thumb">No Photo</div>`}<div><div style="font-weight:600; font-size:0.98rem;">${escapeHtml(item.name)} ${item.is_featured ? `<span style="color:var(--gold); font-size:0.72rem; margin-left:6px;">★ Bestseller</span>` : ''} ${item.custom_badge ? `<span style="color:#ff9e9e; font-size:0.7rem; border:1px solid #ff9e9e; padding:1px 5px; border-radius:4px; margin-left:6px;">${escapeHtml(item.custom_badge)}</span>` : ''}</div><div style="color:var(--gold); font-weight:700; font-size:0.86rem;">${priceHtml} <span style="color:var(--ivory-dim); font-weight:400;">· ${escapeHtml(item.category_name || '')}</span></div>${item.item_tag ? `<div style="font-size:0.75rem; color:var(--gold); margin-top:2px;">↳ ${escapeHtml(item.item_tag)}</div>` : ''}</div></div><div class="row-actions"><label class="switch-label" style="margin-right:8px;"><input type="checkbox" class="avail-toggle" ${item.is_available ? 'checked' : ''} /><span>${item.is_available ? 'Available' : 'Sold Out'}</span></label><button type="button" class="btn btn-secondary btn-sm edit-item-btn">Edit</button><button type="button" class="btn btn-danger btn-sm del-item-btn">Delete</button></div>`;
+        row.innerHTML = `<div>${item.image_url ? `<img src="${escapeHtml(item.image_url)}" class="row-thumb" />` : `<div class="row-thumb">No Photo</div>`}<div><div style="font-weight:600; font-size:0.98rem;">${escapeHtml(item.name)} ${item.is_featured ? `<span style="color:var(--gold); font-size:0.72rem; margin-left:6px;">★ Bestseller</span>` : ''} ${item.custom_badge ? `<span style="color:#ff9e9e; font-size:0.7rem; border:1px solid #ff9e9e; padding:1px 5px; border-radius:4px; margin-left:6px;">${escapeHtml(item.custom_badge)}</span>` : ''}</div><div style="color:var(--gold); font-weight:700; font-size:0.86rem;">${priceHtml} <span style="color:var(--ivory-dim); font-weight:400;">· ${escapeHtml(item.category_name || '')}</span></div>${item.item_tag ? `<div style="font-size:0.75rem; color:var(--gold); margin-top:2px;">↳ ${escapeHtml(item.item_tag)}</div>` : ''}</div></div><div class="row-actions"><label class="switch-label"><input type="checkbox" class="avail-toggle" ${item.is_available ? 'checked' : ''} /><span>${item.is_available ? 'Available' : 'Sold Out'}</span></label><button type="button" class="btn btn-secondary btn-sm edit-item-btn">Edit</button><button type="button" class="btn btn-danger btn-sm del-item-btn">Delete</button></div>`;
         row.querySelector('.avail-toggle').addEventListener('change', async (e) => { try { await apiFetch('/api/items', { method: 'PATCH', body: JSON.stringify({ id: item.id, is_available: e.target.checked ? 1 : 0 }) }); showToast(`✓ Updated.`); await loadAllDashboardData(); } catch (err) { e.target.checked = !e.target.checked; } });
         row.querySelector('.edit-item-btn').addEventListener('click', () => openItemEditor(item)); row.querySelector('.del-item-btn').addEventListener('click', async () => { if (!confirm(`Delete "${item.name}"?`)) return; try { await apiFetch(`/api/items?id=${item.id}`, { method: 'DELETE' }); showToast(`✓ Deleted.`); await loadAllDashboardData(); } catch (err) { showToast(err.message, true); } });
         wrap.appendChild(row);
