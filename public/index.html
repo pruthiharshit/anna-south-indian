@@ -46,7 +46,7 @@
 
     .brand-text { display: flex; flex-direction: column; min-width: 0; }
     .brand-name { font-family: var(--font-serif); font-size: 1.38rem; font-weight: 700; color: var(--ivory); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
-    .brand-meta { font-size: 0.73rem; color: var(--gold); font-weight: 600; letter-spacing: 0.03em; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .brand-meta { font-size: 0.76rem; color: var(--gold); font-weight: 600; letter-spacing: 0.03em; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .header-actions { display: flex; gap: 8px; flex-shrink: 0; }
     .circle-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--bg-surface); border: 1px solid var(--gold-border); color: var(--gold); display: flex; align-items: center; justify-content: center; }
@@ -59,20 +59,13 @@
     .info-pills-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 0.78rem; color: var(--ivory-muted); }
     .info-chip { display: inline-flex; align-items: center; gap: 5px; font-weight: 500; }
     .info-chip strong { color: var(--gold); font-weight: 600; }
-    .address-line { font-size: 0.75rem; color: var(--ivory-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
 
-    /* Custom Addon Badges matching physical menu colors */
     .addon-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
     .addon-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; }
     .addon-butter { background: var(--nonveg-red); color: #fff; box-shadow: 0 2px 8px rgba(214, 69, 69, 0.2); }
     .addon-ghee { background: #e0bb6b; color: #101614; box-shadow: 0 2px 8px rgba(224, 187, 107, 0.2); }
 
-    /* Sticky Navigation Wrapper */
-    .controls-wrapper {
-      position: sticky; top: 68px; z-index: 45; background: rgba(15, 21, 19, 0.98);
-      backdrop-filter: blur(12px); padding: 10px 16px; border-bottom: 1px solid var(--border-subtle);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-    }
+    .controls-wrapper { position: sticky; top: 68px; z-index: 45; background: rgba(15, 21, 19, 0.98); backdrop-filter: blur(12px); padding: 10px 16px; border-bottom: 1px solid var(--border-subtle); box-shadow: 0 4px 15px rgba(0,0,0,0.25); }
     .controls-inner { max-width: 820px; margin: 0 auto; }
     .search-row { display: flex; gap: 10px; margin-bottom: 12px; }
     .search-box { position: relative; flex: 1; }
@@ -82,21 +75,11 @@
     .veg-Toggle { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--ivory-muted); font-size: 0.78rem; font-weight: 600; cursor: pointer; }
     .veg-Toggle.active { border-color: var(--veg-green); background: rgba(46, 158, 91, 0.15); color: var(--ivory); }
 
-    /* Category Strip with Gradient Fade Trick */
     .category-strip-wrapper { position: relative; width: 100%; }
-    .category-strip-wrapper::after {
-      content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 45px;
-      background: linear-gradient(to right, rgba(15, 21, 19, 0), rgba(15, 21, 19, 0.98));
-      pointer-events: none;
-    }
+    .category-strip-wrapper::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 45px; background: linear-gradient(to right, rgba(15, 21, 19, 0), rgba(15, 21, 19, 0.98)); pointer-events: none; }
     .category-strip { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; padding-right: 20px; }
     .category-strip::-webkit-scrollbar { display: none; }
-    .cat-pill { 
-      padding: 8px 16px; border-radius: 99px; background: var(--bg-surface); 
-      border: 1px solid var(--border-subtle); color: var(--ivory-muted); 
-      font-size: 0.88rem; font-weight: 700; white-space: nowrap; cursor: pointer; 
-      transition: all 0.2s ease;
-    }
+    .cat-pill { padding: 8px 16px; border-radius: 99px; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--ivory-muted); font-size: 0.88rem; font-weight: 700; white-space: nowrap; cursor: pointer; transition: all 0.2s ease; }
     .cat-pill.active { background: var(--gold); color: #101614; border-color: var(--gold); transform: scale(1.05); }
 
     .menu-container { padding: 12px 16px 40px; max-width: 820px; margin: 0 auto; }
@@ -104,7 +87,7 @@
     
     .section-header { margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border-subtle); }
     .section-title { font-family: var(--font-serif); font-size: 1.55rem; font-weight: 700; color: var(--ivory); }
-    .section-subtitle { font-size: 0.78rem; color: var(--ivory-dim); margin-top: 2px; }
+    
     .food-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
     @media (min-width: 600px) { .food-grid { grid-template-columns: repeat(2, 1fr); } }
 
@@ -119,13 +102,13 @@
     .diet-icon.non-veg::after { background: var(--nonveg-red); border-radius: 1px; }
 
     .badge-deal { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: rgba(224, 82, 82, 0.18); color: #ff9e9e; border: 1px solid rgba(224, 82, 82, 0.45); }
-    .badge-bestseller { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: var(--gold-soft); color: var(--gold); border: 1px solid var(--gold-border); }
-
+    
     .food-name { font-size: 0.98rem; font-weight: 600; color: var(--ivory); line-height: 1.25; margin-bottom: 3px; }
     .price-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
     .food-price { font-size: 0.96rem; font-weight: 700; color: var(--gold); }
     .price-slashed { font-size: 0.8rem; color: var(--ivory-dim); text-decoration: line-through; }
     .food-desc { font-size: 0.78rem; color: var(--ivory-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .food-custom-tag { font-size: 0.75rem; color: var(--gold); margin-top: 4px; font-weight: 500; }
 
     .food-media { width: 92px; height: 92px; border-radius: 8px; background: var(--bg-elevated); border: 1px solid var(--border-subtle); flex-shrink: 0; overflow: hidden; position: relative; }
     .food-media img { width: 100%; height: 100%; object-fit: cover; }
@@ -133,15 +116,7 @@
     .placeholder-art { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--ivory-dim); }
     .placeholder-art svg { width: 24px; height: 24px; }
 
-    /* Floating Menu Button (Zomato / Swiggy style) */
-    .fab-menu {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: rgba(22, 32, 29, 0.95); backdrop-filter: blur(10px);
-      border: 1px solid var(--gold-border); color: var(--gold); padding: 12px 26px;
-      border-radius: 99px; font-family: var(--font-sans); font-size: 0.95rem; font-weight: 700;
-      display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
-      z-index: 90; cursor: pointer; transition: transform 0.2s;
-    }
+    .fab-menu { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(22, 32, 29, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--gold-border); color: var(--gold); padding: 12px 26px; border-radius: 99px; font-family: var(--font-sans); font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65); z-index: 90; cursor: pointer; transition: transform 0.2s; }
     .fab-menu:active { transform: translateX(-50%) scale(0.95); }
     .fab-menu svg { width: 18px; height: 18px; }
 
@@ -151,24 +126,16 @@
     .service-tag { padding: 4px 10px; border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle); font-size: 0.74rem; color: var(--ivory-muted); }
     .footer-text { font-size: 0.84rem; color: var(--ivory-muted); max-width: 460px; margin: 0 auto 6px; }
 
-    /* Modals */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
     .modal-backdrop.open { display: flex; }
     .modal-sheet { background: var(--bg-card); border-top: 1px solid var(--gold-border); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; position: relative; }
-    
     .modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.65); color: var(--ivory); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
     .modal-image-wrap { width: 100%; height: 220px; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .modal-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .modal-body { padding: 20px; }
     .modal-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; margin: 6px 0; }
 
-    /* Bottom Sheet List Styles */
-    .sheet-cat-btn {
-      display: flex; justify-content: space-between; align-items: center;
-      width: 100%; padding: 14px 20px; background: transparent;
-      color: var(--ivory); font-family: var(--font-sans); font-size: 1.05rem;
-      font-weight: 600; cursor: pointer; transition: background 0.15s;
-    }
+    .sheet-cat-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 14px 20px; background: transparent; color: var(--ivory); font-family: var(--font-sans); font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .sheet-cat-btn:active { background: var(--bg-elevated); }
     .sheet-cat-btn.active { color: var(--gold); background: var(--gold-soft); }
     .sheet-cat-count { font-size: 0.85rem; color: var(--ivory-dim); font-weight: 500; }
@@ -187,7 +154,7 @@
       </div>
       <div class="brand-text">
         <h1 class="brand-name" id="heroName">Anna South Indian Dosa</h1>
-        <div class="brand-meta" id="topEstablished">Sirsa</div>
+        <div class="brand-meta" id="topEstablished">You will enjoy the real south indian taste</div>
       </div>
     </div>
     <div class="header-actions">
@@ -206,9 +173,7 @@
       <a href="#" id="stripPhoneLink" class="info-chip">📞 <strong id="stripPhone">098135 01421</strong></a>
       <span class="info-chip" id="stripServices"></span>
     </div>
-    <div class="address-line" id="stripAddress">PNB St, near Geeta Bhawan, Rori Bazar, B Block, Subhash Chowk, Sirsa</div>
     
-    <!-- Amul Butter & Desi Ghee Add-ons matching physical menu -->
     <div class="addon-row">
       <div class="addon-tag addon-butter">🧈 20/- Extra with Make Amul Butter</div>
       <div class="addon-tag addon-ghee">🍯 40/- Extra with Make Desi Ghee</div>
@@ -246,9 +211,7 @@
         <h2 style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--gold);">Categories</h2>
         <button type="button" class="modal-close" id="menuSheetCloseBtn" style="position: static;">✕</button>
       </div>
-      <div style="overflow-y: auto; padding: 10px 0;" id="sheetMenuList">
-        <!-- Javascript Populates This -->
-      </div>
+      <div style="overflow-y: auto; padding: 10px 0;" id="sheetMenuList"></div>
     </div>
   </div>
 
@@ -261,6 +224,7 @@
         <h2 class="modal-title" id="modalTitle"></h2>
         <div class="price-row" id="modalPriceRow"></div>
         <p class="modal-desc" id="modalDesc" style="font-size:0.9rem; color:var(--ivory-muted); margin-top:8px;"></p>
+        <div id="modalItemTag" class="food-custom-tag" style="margin-top: 8px;"></div>
       </div>
     </div>
   </div>
@@ -289,53 +253,30 @@
 
       function renderSettings(settings) {
         if (!settings) return;
-        const add = settings.additional_settings || {};
         const name = settings.restaurant_name || 'Anna South Indian Dosa';
 
         const banner = document.getElementById('announcementBanner');
         if (settings.announcement && String(settings.announcement).trim() !== '') {
           banner.textContent = '🎉 ' + settings.announcement.trim();
           banner.style.display = 'block';
-        } else {
-          banner.style.display = 'none';
-        }
+        } else { banner.style.display = 'none'; }
 
         document.title = `${name} — Menu`;
         document.getElementById('heroName').textContent = name;
         document.getElementById('footerName').textContent = name;
+        document.getElementById('topEstablished').textContent = 'You will enjoy the real south indian taste';
 
-        const metaParts = [add.established, add.hindi_name].filter(Boolean);
-        document.getElementById('topEstablished').textContent = metaParts.length ? metaParts.join(' · ') : 'Sirsa';
-
-        const logoImg = document.getElementById('logoImage');
-        const logoFallback = document.getElementById('logoFallback');
+        const logoImg = document.getElementById('logoImage'), logoFallback = document.getElementById('logoFallback');
         if (settings.logo_url && String(settings.logo_url).trim() !== '') {
           logoImg.onload = () => { logoImg.style.display = 'block'; logoFallback.style.display = 'none'; };
           logoImg.onerror = () => { logoImg.style.display = 'none'; logoFallback.style.display = 'block'; logoFallback.textContent = name.charAt(0).toUpperCase(); };
           logoImg.src = settings.logo_url;
-        } else {
-          logoImg.style.display = 'none';
-          logoFallback.style.display = 'block';
-          logoFallback.textContent = name.charAt(0).toUpperCase();
-        }
+        } else { logoImg.style.display = 'none'; logoFallback.style.display = 'block'; logoFallback.textContent = name.charAt(0).toUpperCase(); }
 
-        const rawPhone = settings.phone || '';
-        const cleanPhone = String(rawPhone).replace(/\s+/g, '');
-        const hours = settings.opening_hours || '';
-        const address = settings.address || '';
-
-        document.getElementById('topCallLink').href = `tel:${cleanPhone}`;
-        document.getElementById('stripPhoneLink').href = `tel:${cleanPhone}`;
-        document.getElementById('stripPhone').textContent = rawPhone;
-        document.getElementById('footerPhone').href = `tel:${cleanPhone}`;
-        document.getElementById('footerPhone').textContent = rawPhone;
-
-        document.getElementById('stripHours').textContent = hours;
-        document.getElementById('footerHours').textContent = hours;
-
-        document.getElementById('stripAddress').textContent = '📍 ' + address;
+        const rawPhone = settings.phone || '', cleanPhone = String(rawPhone).replace(/\s+/g, ''), hours = settings.opening_hours || '', address = settings.address || '';
+        document.getElementById('topCallLink').href = `tel:${cleanPhone}`; document.getElementById('stripPhoneLink').href = `tel:${cleanPhone}`; document.getElementById('stripPhone').textContent = rawPhone; document.getElementById('footerPhone').href = `tel:${cleanPhone}`; document.getElementById('footerPhone').textContent = rawPhone;
+        document.getElementById('stripHours').textContent = hours; document.getElementById('footerHours').textContent = hours;
         document.getElementById('footerAddress').textContent = address;
-
         document.getElementById('topDirectionsLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' ' + address)}`;
 
         const servicesList = Array.isArray(settings.services) && settings.services.length ? settings.services : ['Dine-in', 'Drive-through', 'Delivery'];
@@ -345,60 +286,42 @@
 
       function jumpToCat(catId) {
         if (state.searchQuery || state.vegOnly) {
-          state.searchQuery = '';
-          state.vegOnly = false;
+          state.searchQuery = ''; state.vegOnly = false;
           document.getElementById('searchInput').value = '';
           document.getElementById('vegFilterBtn').classList.remove('active');
           renderMenu();
         }
-
         setTimeout(() => {
-          if (catId === 'all') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          } else {
+          if (catId === 'all') { window.scrollTo({ top: 0, behavior: 'smooth' }); } else {
             const targetEl = document.getElementById(`cat-section-${catId}`);
-            if (targetEl) {
-              const y = targetEl.getBoundingClientRect().top + window.scrollY - 140;
-              window.scrollTo({ top: y, behavior: 'smooth' });
-            }
+            if (targetEl) window.scrollTo({ top: targetEl.getBoundingClientRect().top + window.scrollY - 140, behavior: 'smooth' });
           }
         }, 50);
-
         document.getElementById('menuSheetModal').classList.remove('open');
       }
 
       function renderCategories() {
-        const strip = document.getElementById('categoryStrip');
-        const sheetList = document.getElementById('sheetMenuList');
+        const strip = document.getElementById('categoryStrip'), sheetList = document.getElementById('sheetMenuList');
         
-        // Add "All Dishes" option at the very beginning
         strip.innerHTML = `<button class="cat-pill active" data-cat-target="all">All Dishes</button>`;
-        sheetList.innerHTML = `
-          <button class="sheet-cat-btn active" data-cat-target="all">
-            <span>All Dishes</span>
-            <span class="sheet-cat-count">${state.items.filter(i => i.is_available).length}</span>
-          </button>
-        `;
+        sheetList.innerHTML = `<button class="sheet-cat-btn active" data-cat-target="all"><span>All Dishes</span><span class="sheet-cat-count">${state.items.filter(i => i.is_available).length}</span></button>`;
         
+        // Bestsellers Dedicated Category Logic
+        const bestsellers = state.items.filter(i => i.is_featured && i.is_available);
+        if (bestsellers.length > 0) {
+          strip.innerHTML += `<button class="cat-pill" data-cat-target="bestsellers"><span style="color:var(--gold);">★</span> Bestsellers</button>`;
+          sheetList.innerHTML += `<button class="sheet-cat-btn" data-cat-target="bestsellers"><span><span style="color:var(--gold);">★</span> Bestsellers</span><span class="sheet-cat-count">${bestsellers.length}</span></button>`;
+        }
+
         state.categories.forEach((cat) => {
           const catItemsCount = state.items.filter(i => String(i.category_id) === String(cat.id)).length;
           if (catItemsCount === 0) return; 
-
           strip.innerHTML += `<button class="cat-pill" data-cat-target="${cat.id}">${escapeHtml(cat.name)}</button>`;
-          sheetList.innerHTML += `
-            <button class="sheet-cat-btn" data-cat-target="${cat.id}">
-              <span>${escapeHtml(cat.name)}</span>
-              <span class="sheet-cat-count">${catItemsCount}</span>
-            </button>
-          `;
+          sheetList.innerHTML += `<button class="sheet-cat-btn" data-cat-target="${cat.id}"><span>${escapeHtml(cat.name)}</span><span class="sheet-cat-count">${catItemsCount}</span></button>`;
         });
 
-        strip.querySelectorAll('.cat-pill').forEach((btn) => {
-          btn.addEventListener('click', (e) => jumpToCat(e.target.dataset.catTarget));
-        });
-        sheetList.querySelectorAll('.sheet-cat-btn').forEach((btn) => {
-          btn.addEventListener('click', (e) => jumpToCat(e.currentTarget.dataset.catTarget));
-        });
+        strip.querySelectorAll('.cat-pill').forEach((btn) => btn.addEventListener('click', (e) => jumpToCat(e.target.dataset.catTarget)));
+        sheetList.querySelectorAll('.sheet-cat-btn').forEach((btn) => btn.addEventListener('click', (e) => jumpToCat(e.currentTarget.dataset.catTarget)));
       }
 
       function createFoodCard(item) {
@@ -407,12 +330,9 @@
 
         let badgesHtml = `<span class="diet-icon ${item.is_vegetarian ? '' : 'non-veg'}"></span>`;
         if (item.custom_badge) badgesHtml += `<span class="badge-deal">${escapeHtml(item.custom_badge)}</span>`;
-        if (item.is_featured) badgesHtml += `<span class="badge-bestseller">★ Bestseller</span>`;
 
         let priceHtml = `<div class="food-price">${formatINR(item.price_paise)}</div>`;
-        if (item.original_price_paise > item.price_paise) {
-          priceHtml += `<div class="price-slashed">${formatINR(item.original_price_paise)}</div>`;
-        }
+        if (item.original_price_paise > item.price_paise) priceHtml += `<div class="price-slashed">${formatINR(item.original_price_paise)}</div>`;
 
         card.innerHTML = `
           <div class="food-info">
@@ -420,6 +340,7 @@
             <h3 class="food-name">${escapeHtml(item.name)}</h3>
             <div class="price-row">${priceHtml}</div>
             ${item.description ? `<p class="food-desc">${escapeHtml(item.description)}</p>` : ''}
+            ${item.item_tag ? `<div class="food-custom-tag">↳ ${escapeHtml(item.item_tag)}</div>` : ''}
           </div>
           <div class="food-media">
             ${item.image_url ? `<img src="${escapeHtml(item.image_url)}" loading="lazy" alt="${escapeHtml(item.name)}" />` : getPlaceholderSvg()}
@@ -432,20 +353,14 @@
 
       function setupScrollSpy() {
         if (scrollObserver) scrollObserver.disconnect();
-        
         scrollObserver = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               const catId = entry.target.dataset.categoryId;
+              document.querySelectorAll('.cat-pill, .sheet-cat-btn').forEach(b => b.classList.remove('active'));
               
-              document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
               const activePill = document.querySelector(`.cat-pill[data-cat-target="${catId}"]`);
-              if (activePill) {
-                activePill.classList.add('active');
-                activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-              }
-
-              document.querySelectorAll('.sheet-cat-btn').forEach(b => b.classList.remove('active'));
+              if (activePill) { activePill.classList.add('active'); activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }
               const activeSheetBtn = document.querySelector(`.sheet-cat-btn[data-cat-target="${catId}"]`);
               if (activeSheetBtn) activeSheetBtn.classList.add('active');
             }
@@ -454,7 +369,6 @@
 
         document.querySelectorAll('.menu-section').forEach(sec => scrollObserver.observe(sec));
 
-        // Detect if scrolled to the absolute top to highlight "All Dishes"
         window.addEventListener('scroll', () => {
           if (window.scrollY < 120) {
             document.querySelectorAll('.cat-pill, .sheet-cat-btn').forEach(b => b.classList.remove('active'));
@@ -473,20 +387,19 @@
         const filtered = state.items.filter((i) => {
           if (state.vegOnly && !i.is_vegetarian) return false;
           if (!q) return true;
-          return String(i.name || '').toLowerCase().includes(q) || String(i.description || '').toLowerCase().includes(q);
+          return String(i.name || '').toLowerCase().includes(q) || String(i.description || '').toLowerCase().includes(q) || String(i.item_tag || '').toLowerCase().includes(q);
         });
 
-        if (!filtered.length) {
-          container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--ivory-dim);">No dishes found right now.</div>`;
-          return;
-        }
+        if (!filtered.length) { container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--ivory-dim);">No dishes found right now.</div>`; return; }
 
         if (!q) {
-          const feats = filtered.filter((i) => (i.is_featured || i.custom_badge) && i.is_available);
+          const feats = filtered.filter((i) => i.is_featured && i.is_available);
           if (feats.length > 0) {
             const sec = document.createElement('div');
+            sec.id = 'cat-section-bestsellers';
             sec.className = 'menu-section';
-            sec.innerHTML = `<div class="section-header"><h2 class="section-title"><span style="color:var(--gold);">★</span> Specials & Bestsellers</h2></div><div class="food-grid"></div>`;
+            sec.dataset.categoryId = 'bestsellers';
+            sec.innerHTML = `<div class="section-header"><h2 class="section-title"><span style="color:var(--gold);">★</span> Bestsellers</h2></div><div class="food-grid"></div>`;
             feats.forEach((i) => sec.querySelector('.food-grid').appendChild(createFoodCard(i)));
             container.appendChild(sec);
           }
@@ -495,19 +408,8 @@
         state.categories.forEach((cat) => {
           const catItems = filtered.filter((i) => String(i.category_id) === String(cat.id));
           if (catItems.length === 0) return;
-          
-          const sec = document.createElement('div');
-          sec.id = `cat-section-${cat.id}`;
-          sec.className = 'menu-section';
-          sec.dataset.categoryId = cat.id; 
-          sec.innerHTML = `
-            <div class="section-header">
-              <h2 class="section-title">${escapeHtml(cat.name)}</h2>
-              ${cat.description ? `<p class="section-subtitle">${escapeHtml(cat.description)}</p>` : ''}
-            </div>
-            <div class="food-grid"></div>
-          `;
-          
+          const sec = document.createElement('div'); sec.id = `cat-section-${cat.id}`; sec.className = 'menu-section'; sec.dataset.categoryId = cat.id; 
+          sec.innerHTML = `<div class="section-header"><h2 class="section-title">${escapeHtml(cat.name)}</h2>${cat.description ? `<p class="section-subtitle">${escapeHtml(cat.description)}</p>` : ''}</div><div class="food-grid"></div>`;
           catItems.forEach((i) => sec.querySelector('.food-grid').appendChild(createFoodCard(i)));
           container.appendChild(sec);
         });
@@ -529,12 +431,13 @@
         let p = `<div class="food-price" style="font-size:1.15rem;">${formatINR(item.price_paise)}</div>`;
         if (item.original_price_paise > item.price_paise) p += `<div class="price-slashed" style="margin-left:8px;">${formatINR(item.original_price_paise)}</div>`;
         document.getElementById('modalPriceRow').innerHTML = p;
-
         document.getElementById('modalDesc').textContent = item.description || '';
+        
+        document.getElementById('modalItemTag').innerHTML = item.item_tag ? `↳ ${escapeHtml(item.item_tag)}` : '';
+        
         modal.classList.add('open');
       }
 
-      // FAB and Modal Listeners
       document.getElementById('fabMenuBtn').addEventListener('click', () => document.getElementById('menuSheetModal').classList.add('open'));
       document.getElementById('menuSheetCloseBtn').addEventListener('click', () => document.getElementById('menuSheetModal').classList.remove('open'));
       document.getElementById('menuSheetModal').addEventListener('click', (e) => { if (e.target.id === 'menuSheetModal') e.target.classList.remove('open'); });
@@ -550,22 +453,12 @@
           const res = await fetch('/api/menu?t=' + Date.now(), { cache: 'no-store' });
           if (!res.ok) throw new Error('Menu fetch failed');
           const data = await res.json();
-          state.settings = data.settings;
-          state.categories = data.categories || [];
-          state.items = data.items || [];
-          
-          renderSettings(state.settings);
-          renderCategories();
-          renderMenu();
-        } catch {
-          document.getElementById('menuContainer').innerHTML = `<div style="text-align:center; padding:40px; color:#f28b82;">Unable to load menu. Please refresh.</div>`;
-        }
+          state.settings = data.settings; state.categories = data.categories || []; state.items = data.items || [];
+          renderSettings(state.settings); renderCategories(); renderMenu();
+        } catch { document.getElementById('menuContainer').innerHTML = `<div style="text-align:center; padding:40px; color:#f28b82;">Unable to load menu. Please refresh.</div>`; }
       }
 
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') loadMenuData();
-      });
-
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadMenuData(); });
       loadMenuData();
     })();
   </script>
