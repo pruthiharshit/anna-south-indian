@@ -1,4 +1,4 @@
-const DEFAULT_FIREBASE_PROJECT_ID = 'anna-menu';
+const FIREBASE_API_KEY = 'AIzaSyDxxCYCn-HL6ifsoGiQZ_quskyjJgN-JXs';
 const SAFE_KEY_REGEX = /^[a-zA-Z0-9_-]{3,120}\.(webp|jpg|jpeg|png)$/;
 let dbInitialized = false;
 
@@ -16,14 +16,34 @@ function json(data, status = 200, extraHeaders = {}) {
 
 async function ensureDatabase(db) {
   if (dbInitialized) return;
-  await db.batch([
-    db.prepare(`CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, description TEXT DEFAULT '', display_order INTEGER NOT NULL DEFAULT 0, is_active INTEGER NOT NULL DEFAULT 1)`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS menu_items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT DEFAULT '', price_paise INTEGER NOT NULL DEFAULT 0, original_price_paise INTEGER NOT NULL DEFAULT 0, custom_badge TEXT DEFAULT '', category_id INTEGER NOT NULL, image_key TEXT DEFAULT '', image_url TEXT DEFAULT '', is_vegetarian INTEGER NOT NULL DEFAULT 1, is_available INTEGER NOT NULL DEFAULT 1, is_featured INTEGER NOT NULL DEFAULT 0, display_order INTEGER NOT NULL DEFAULT 0)`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS restaurant_settings (id INTEGER PRIMARY KEY CHECK (id = 1), restaurant_name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', address TEXT NOT NULL, phone TEXT NOT NULL, opening_hours TEXT NOT NULL DEFAULT '', announcement TEXT DEFAULT '', logo_url TEXT DEFAULT '', services TEXT NOT NULL DEFAULT '["Dine-in","Drive-through","Delivery"]', additional_settings TEXT NOT NULL DEFAULT '{"hindi_name":"अन्ना साउथ इंडियन डोसा","established":"Since 2001"}')`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS authorized_admins (email TEXT PRIMARY KEY, password_note TEXT DEFAULT '', added_at TEXT)`),
-    db.prepare(`INSERT OR IGNORE INTO restaurant_settings (id, restaurant_name, address, phone, opening_hours) VALUES (1, 'Anna South Indian Dosa', 'PNB St, near Geeta Bhawan, Rori Bazar, B Block, Subhash Chowk, Sirsa, Haryana 125055', '98135-01421 / 98219-14139', 'Closes 10:00 PM')`)
-  ]);
+  const queries = [
+    `CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, description TEXT DEFAULT '', display_order INTEGER NOT NULL DEFAULT 0, is_active INTEGER NOT NULL DEFAULT 1)`,
+    `CREATE TABLE IF NOT EXISTS menu_items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT DEFAULT '', price_paise INTEGER NOT NULL DEFAULT 0, original_price_paise INTEGER NOT NULL DEFAULT 0, custom_badge TEXT DEFAULT '', category_id INTEGER NOT NULL, image_key TEXT DEFAULT '', image_url TEXT DEFAULT '', is_vegetarian INTEGER NOT NULL DEFAULT 1, is_available INTEGER NOT NULL DEFAULT 1, is_featured INTEGER NOT NULL DEFAULT 0, display_order INTEGER NOT NULL DEFAULT 0)`,
+    `CREATE TABLE IF NOT EXISTS restaurant_settings (id INTEGER PRIMARY KEY CHECK (id = 1), restaurant_name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', address TEXT NOT NULL, phone TEXT NOT NULL, opening_hours TEXT NOT NULL DEFAULT '', announcement TEXT DEFAULT '', logo_url TEXT DEFAULT '', services TEXT NOT NULL DEFAULT '["Dine-in","Drive-through","Delivery"]', additional_settings TEXT NOT NULL DEFAULT '{"hindi_name":"अन्ना साउथ इंडियन डोसा","established":"Since 2001"}')`,
+    `CREATE TABLE IF NOT EXISTS authorized_admins (email TEXT PRIMARY KEY, password_note TEXT DEFAULT '', added_at TEXT)`,
+    `INSERT OR IGNORE INTO restaurant_settings (id, restaurant_name, address, phone, opening_hours) VALUES (1, 'Anna South Indian Dosa', 'PNB St, near Geeta Bhawan, Rori Bazar, B Block, Subhash Chowk, Sirsa, Haryana 125055', '98135-01421 / 98219-14139', 'Closes 10:00 PM')`,
+    // Safe schema upgrades for new features
+    `ALTER TABLE menu_items ADD COLUMN item_tag TEXT DEFAULT ''`,
+    `ALTER TABLE menu_items ADD COLUMN out_of_stock_at INTEGER DEFAULT 0`
+  ];
+  for (const q of queries) { try { await db.prepare(q).run(); } catch(e) {} }
   dbInitialized = true;
+}
+
+// Auto-Reset Out of Stock items if it is a new calendar day in Indian Standard Time (IST)
+function applyAutoStockReset(items) {
+  const now = Date.now();
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const todayIST = new Date(now + istOffset).toISOString().split('T')[0];
+
+  items.forEach(item => {
+    if (item.is_available === 0 && item.out_of_stock_at > 0) {
+      const oosIST = new Date(item.out_of_stock_at + istOffset).toISOString().split('T')[0];
+      if (oosIST !== todayIST) {
+        item.is_available = 1; // Auto-correct to available for the frontend
+      }
+    }
+  });
 }
 
 function base64UrlToUint8Array(str) {
@@ -38,31 +58,14 @@ function base64UrlToUint8Array(str) {
 async function verifyFirebaseToken(request, env) {
   const authHeader = request.headers.get('Authorization') || '';
   if (!authHeader.startsWith('Bearer ')) return { ok: false, error: 'Missing authentication token.' };
-  
-  const parts = authHeader.slice(7).trim().split('.');
-  if (parts.length !== 3) return { ok: false, error: 'Invalid token format.' };
+  const token = authHeader.slice(7).trim();
 
   try {
-    const header = JSON.parse(new TextDecoder().decode(base64UrlToUint8Array(parts[0])));
-    const payload = JSON.parse(new TextDecoder().decode(base64UrlToUint8Array(parts[1])));
-    const signature = base64UrlToUint8Array(parts[2]);
-    const pid = (env.FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_PROJECT_ID).trim();
-
-    if (payload.exp <= Math.floor(Date.now() / 1000)) return { ok: false, error: 'Session expired.' };
-    if (pid && payload.aud !== pid) return { ok: false, error: 'Project mismatch.' };
-
-    const jwksRes = await fetch('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com');
-    const { keys } = await jwksRes.json();
-    const jwk = (keys || []).find((k) => k.kid === header.kid);
-    if (!jwk) return { ok: false, error: 'Signing key not found.' };
-
-    if (!jwk.key_ops) jwk.key_ops = ["verify"];
-
-    const cryptoKey = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
-    const isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signature, new TextEncoder().encode(`${parts[0]}.${parts[1]}`));
-    if (!isValid) return { ok: false, error: 'Invalid token signature.' };
-
-    const email = (payload.email || '').toLowerCase();
+    const fbRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: token }) });
+    const fbData = await fbRes.json();
+    if (!fbRes.ok || !fbData.users || fbData.users.length === 0) return { ok: false, error: 'Firebase rejected session.' };
+    const email = (fbData.users[0].email || '').toLowerCase();
+    
     const countRow = await env.DB.prepare(`SELECT COUNT(*) AS c FROM authorized_admins`).first();
     if (!countRow || countRow.c === 0) {
       await env.DB.prepare(`INSERT INTO authorized_admins (email, added_at) VALUES (?, datetime('now'))`).bind(email).run();
@@ -71,7 +74,7 @@ async function verifyFirebaseToken(request, env) {
       if (!check) return { ok: false, error: 'Email not authorized.' };
     }
     return { ok: true, email };
-  } catch (err) { return { ok: false, error: 'Token JS Error: ' + err.message }; }
+  } catch (err) { return { ok: false, error: 'Auth Error: ' + err.message }; }
 }
 
 async function cleanupOrphanedR2Image(env, imageKey) {
@@ -113,68 +116,43 @@ export async function onRequest(context) {
           env.DB.prepare(`SELECT m.* FROM menu_items m INNER JOIN categories c ON c.id = m.category_id WHERE c.is_active = 1 ORDER BY c.display_order ASC, m.display_order ASC, m.id ASC`)
         ]);
         const raw = sRes.results[0] || {};
-        let services = ['Dine-in', 'Drive-through', 'Delivery'], additional = {};
+        let services = ['Dine-in'], additional = {};
         try { services = JSON.parse(raw.services || '[]'); } catch {} try { additional = JSON.parse(raw.additional_settings || '{}'); } catch {}
+        
+        applyAutoStockReset(iRes.results); // Auto resets next-day items
+
         return json({ settings: { restaurant_name: raw.restaurant_name || '', address: raw.address || '', phone: raw.phone || '', opening_hours: raw.opening_hours || '', announcement: raw.announcement || '', logo_url: raw.logo_url || '', services, additional_settings: additional }, categories: cRes.results || [], items: iRes.results || [] });
       }
 
       const auth = await verifyFirebaseToken(request, env);
       if (!auth.ok) return json({ error: auth.error }, 401);
 
-      // BULK MANAGEMENT API ENDPOINTS
       if (path === '/api/bulk' && method === 'POST') {
         const b = await request.json();
-        
         if (b.action === 'replace_price') {
-          await env.DB.prepare(`UPDATE menu_items SET price_paise = ? WHERE price_paise = ?`).bind(Number(b.new_price_paise), Number(b.old_price_paise)).run();
-          return json({ ok: true });
+          await env.DB.prepare(`UPDATE menu_items SET price_paise = ? WHERE price_paise = ?`).bind(Number(b.new_price_paise), Number(b.old_price_paise)).run(); return json({ ok: true });
         }
-        
         if (b.action === 'stock') {
-          // Explicitly strictly format the boolean number to prevent string coercion issues
           const isAvail = Number(b.is_available) === 1 ? 1 : 0;
+          const oosTime = isAvail === 0 ? Date.now() : 0;
           if (b.category_id === 'all') {
-            await env.DB.prepare(`UPDATE menu_items SET is_available = ?`).bind(isAvail).run();
+            await env.DB.prepare(`UPDATE menu_items SET is_available = ?, out_of_stock_at = ?`).bind(isAvail, oosTime).run();
           } else {
-            await env.DB.prepare(`UPDATE menu_items SET is_available = ? WHERE category_id = ?`).bind(isAvail, Number(b.category_id)).run();
+            await env.DB.prepare(`UPDATE menu_items SET is_available = ?, out_of_stock_at = ? WHERE category_id = ?`).bind(isAvail, oosTime, Number(b.category_id)).run();
           }
           return json({ ok: true });
         }
-        
         if (b.action === 'start_sale') {
-          const disc = Number(b.discount_percent);
-          const badge = String(b.badge || '');
-          const q = `
-            UPDATE menu_items 
-            SET original_price_paise = CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END,
-                price_paise = CAST(ROUND((CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END) * ((100.0 - ?) / 100.0)) AS INTEGER),
-                custom_badge = ?
-            ${b.category_id !== 'all' ? 'WHERE category_id = ?' : ''}
-          `;
-          if (b.category_id !== 'all') {
-            await env.DB.prepare(q).bind(disc, badge, Number(b.category_id)).run();
-          } else {
-            await env.DB.prepare(q).bind(disc, badge).run();
-          }
+          const disc = Number(b.discount_percent), badge = String(b.badge || '');
+          const q = `UPDATE menu_items SET original_price_paise = CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END, price_paise = CAST(ROUND((CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END) * ((100.0 - ?) / 100.0)) AS INTEGER), custom_badge = ? ${b.category_id !== 'all' ? 'WHERE category_id = ?' : ''}`;
+          if (b.category_id !== 'all') { await env.DB.prepare(q).bind(disc, badge, Number(b.category_id)).run(); } else { await env.DB.prepare(q).bind(disc, badge).run(); }
           return json({ ok: true });
         }
-
         if (b.action === 'end_sale') {
-          const q = `
-            UPDATE menu_items 
-            SET price_paise = CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END,
-                original_price_paise = 0,
-                custom_badge = ''
-            ${b.category_id !== 'all' ? 'WHERE category_id = ? AND original_price_paise > 0' : 'WHERE original_price_paise > 0'}
-          `;
-          if (b.category_id !== 'all') {
-            await env.DB.prepare(q).bind(Number(b.category_id)).run();
-          } else {
-            await env.DB.prepare(q).run();
-          }
+          const q = `UPDATE menu_items SET price_paise = CASE WHEN original_price_paise > 0 THEN original_price_paise ELSE price_paise END, original_price_paise = 0, custom_badge = '' ${b.category_id !== 'all' ? 'WHERE category_id = ? AND original_price_paise > 0' : 'WHERE original_price_paise > 0'}`;
+          if (b.category_id !== 'all') { await env.DB.prepare(q).bind(Number(b.category_id)).run(); } else { await env.DB.prepare(q).run(); }
           return json({ ok: true });
         }
-        
         return json({ error: 'Unknown bulk action' }, 400);
       }
 
@@ -186,6 +164,9 @@ export async function onRequest(context) {
           env.DB.prepare(`SELECT email, password_note, added_at FROM authorized_admins ORDER BY added_at ASC`)
         ]);
         const raw = sRes.results[0] || {}; let services = ['Dine-in'], additional = {}; try { services = JSON.parse(raw.services || '[]'); } catch {} try { additional = JSON.parse(raw.additional_settings || '{}'); } catch {}
+        
+        applyAutoStockReset(iRes.results);
+
         return json({ categories: cRes.results || [], items: iRes.results || [], settings: { ...raw, services, additional_settings: additional }, admins: aRes.results || [] });
       }
 
@@ -212,18 +193,25 @@ export async function onRequest(context) {
       if (path === '/api/items') {
         if (method === 'POST' || method === 'PUT') {
           const b = await request.json(), id = Number(b.id || 0), imageKey = String(b.image_key || '').trim(), imageUrl = imageKey ? `/media/${imageKey}` : '';
+          const tag = String(b.item_tag || '').trim();
           if (method === 'POST') {
-            await env.DB.prepare(`INSERT INTO menu_items (name, description, price_paise, original_price_paise, custom_badge, category_id, image_key, image_url, is_vegetarian, is_available, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
-              b.name, b.description || '', Number(b.price_paise || 0), Number(b.original_price_paise || 0), b.custom_badge || '', Number(b.category_id), imageKey, imageUrl, b.is_vegetarian ? 1 : 0, b.is_available ? 1 : 0, b.is_featured ? 1 : 0).run();
+            await env.DB.prepare(`INSERT INTO menu_items (name, description, item_tag, price_paise, original_price_paise, custom_badge, category_id, image_key, image_url, is_vegetarian, is_available, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
+              b.name, b.description || '', tag, Number(b.price_paise || 0), Number(b.original_price_paise || 0), b.custom_badge || '', Number(b.category_id), imageKey, imageUrl, b.is_vegetarian ? 1 : 0, b.is_available ? 1 : 0, b.is_featured ? 1 : 0).run();
           } else {
             const old = await env.DB.prepare(`SELECT image_key FROM menu_items WHERE id = ?`).bind(id).first();
-            await env.DB.prepare(`UPDATE menu_items SET name=?, description=?, price_paise=?, original_price_paise=?, custom_badge=?, category_id=?, image_key=?, image_url=?, is_vegetarian=?, is_available=?, is_featured=? WHERE id=?`).bind(
-              b.name, b.description || '', Number(b.price_paise || 0), Number(b.original_price_paise || 0), b.custom_badge || '', Number(b.category_id), imageKey, imageUrl, b.is_vegetarian ? 1 : 0, b.is_available ? 1 : 0, b.is_featured ? 1 : 0, id).run();
+            await env.DB.prepare(`UPDATE menu_items SET name=?, description=?, item_tag=?, price_paise=?, original_price_paise=?, custom_badge=?, category_id=?, image_key=?, image_url=?, is_vegetarian=?, is_available=?, is_featured=? WHERE id=?`).bind(
+              b.name, b.description || '', tag, Number(b.price_paise || 0), Number(b.original_price_paise || 0), b.custom_badge || '', Number(b.category_id), imageKey, imageUrl, b.is_vegetarian ? 1 : 0, b.is_available ? 1 : 0, b.is_featured ? 1 : 0, id).run();
             if (old?.image_key && old.image_key !== imageKey) await cleanupOrphanedR2Image(env, old.image_key);
           }
           return json({ ok: true });
         }
-        if (method === 'PATCH') { const b = await request.json(); await env.DB.prepare(`UPDATE menu_items SET is_available = ? WHERE id = ?`).bind(b.is_available ? 1 : 0, Number(b.id)).run(); return json({ ok: true }); }
+        if (method === 'PATCH') { 
+          const b = await request.json(); 
+          const isAvail = b.is_available ? 1 : 0;
+          const oosTime = isAvail === 0 ? Date.now() : 0;
+          await env.DB.prepare(`UPDATE menu_items SET is_available = ?, out_of_stock_at = ? WHERE id = ?`).bind(isAvail, oosTime, Number(b.id)).run(); 
+          return json({ ok: true }); 
+        }
         if (method === 'DELETE') { const id = Number(url.searchParams.get('id')), existing = await env.DB.prepare(`SELECT image_key FROM menu_items WHERE id = ?`).bind(id).first(); await env.DB.prepare(`DELETE FROM menu_items WHERE id = ?`).bind(id).run(); if (existing?.image_key) await cleanupOrphanedR2Image(env, existing.image_key); return json({ ok: true }); }
       }
 
